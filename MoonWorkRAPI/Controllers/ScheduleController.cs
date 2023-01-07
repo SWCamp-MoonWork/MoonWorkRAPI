@@ -44,7 +44,6 @@ namespace MoonWorkRAPI.Controllers
             {
                 ScheduleModel schedule = new ScheduleModel();
 
-                //byte[] bytes = { };
                 schedule.ScheduleId = 100;
                 schedule.ScheduleName = "test100";
                 schedule.ScheduleType = false;

@@ -13,6 +13,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
