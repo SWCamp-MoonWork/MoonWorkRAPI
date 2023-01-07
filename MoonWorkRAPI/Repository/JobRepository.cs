@@ -10,11 +10,10 @@ namespace MoonWorkRAPI.Repository
     {
         public Task<IEnumerable<JobModel>> GetJobs();
         public Task<JobModel> GetJob(int JobId);
-/*        public Task<IEnumerable<JobModel>> GetRunningJobs();*/
         public Task CreateJob(JobModel job);
         public Task UpdateJob(int JobId, JobModel job);
         public Task DeleteJob(int JobId);
-
+        public Task<IEnumerable<JobModel>> GetRunningJobs();
     }
 
 
@@ -48,26 +47,10 @@ namespace MoonWorkRAPI.Repository
 
             using (var connection = _context.CreateConnection())
             {
-                var job = await connection.QuerySingleOrDefaultAsync<JobModel>(query, new {JobId});
+                var job = await connection.QuerySingleOrDefaultAsync<JobModel>(query, new { JobId });
                 return job;
             }
         }
-
-/*        public async Task<IEnumerable<JobModel>> GetRunningJobs()
-        {
-            var query = "SELECT JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId" +
-                "   FROM Job" +
-                "   WHERE IsUse = '1'";
-
-            using (var connection = _context.CreateConnection())
-            {
-                var jobs = await connection.QueryAsync<JobModel>(query);
-                return jobs.ToList();
-            }
-        }*/
-
-
-
 
         // Job 생성하기
         public async Task CreateJob(JobModel job)
@@ -129,6 +112,20 @@ namespace MoonWorkRAPI.Repository
             using (var conn = _context.CreateConnection())
             {
                 await conn.ExecuteAsync(query, new { JobId });
+            }
+        }
+
+
+        public async Task<IEnumerable<JobModel>> GetRunningJobs()
+        {
+            var query = "SELECT JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId" +
+                "   FROM Job" +
+                "   WHERE IsUse = true";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var runningJobs = await connection.QueryAsync<JobModel>(query);
+                return runningJobs.ToList();
             }
         }
     }
