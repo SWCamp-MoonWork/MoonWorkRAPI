@@ -40,3 +40,4 @@ app.UseAuthorization();
 //app.MapRazorPages();
 
 app.Run();
+//¾È³ç?±ê ¿¬°á
