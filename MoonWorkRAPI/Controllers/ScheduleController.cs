@@ -19,36 +19,42 @@ namespace MoonWorkRAPI.Controllers
         // 특정 job에 대한 schedule 가져오기
         [HttpGet]
         [Route("{JobId}/Schedule", Name = "ScheduleByJobId")]
-        public async Task<ActionResult<ScheduleModel>> GetSchedule(int JobId)
+        public async Task<ActionResult<List<ScheduleModel>>> GetSchedule(int JobId)
         {
             try
             {
-            var schedule = await _ScheduleRepo.GetSchedule(JobId);
-            if(schedule == null)
+                var schedule = await _ScheduleRepo.GetSchedule(JobId);
+                if (schedule == null)
                     return NotFound();
 
                 return Ok(schedule);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
 
         // 특정 job에 대한 schedule 생성
-        [HttpPost]
-        [Route("{JobId}/Schedule")]
-        public async Task<ActionResult> CreateSchedule(int JobId)
+        [HttpPost("{JobId}/Schedule")]
+        /*        [Route("{JobId}/Schedule")]*/
+        public async Task<ActionResult> CreateSchedule()
         {
             try
             {
                 ScheduleModel schedule = new ScheduleModel();
 
-                schedule.ScheduleId = 100;
-                schedule.ScheduleName = "test100";
-                schedule.ScheduleType = false;
+                schedule.ScheduleId = 10;
+                schedule.JobId = 10;
+                schedule.ScheduleName = "test10";
+                schedule.IsUse = true;
+                schedule.CronExpression = "0 0/20 * * * ?";
+                schedule.ScheduleType = true;
+                schedule.OneTimeOccurDT = null;
                 schedule.ScheduleStartDT = DateTime.Now;
                 schedule.ScheduleEndDT = DateTime.Now;
+                schedule.SaveDate = DateTime.Now;
+                schedule.UserId = 3;
 
                 await _ScheduleRepo.CreateSchedule(schedule);
 
@@ -63,17 +69,17 @@ namespace MoonWorkRAPI.Controllers
         // 특정 job에 대한 schedule 수정
         [HttpPut]
         [Route("{JobId}/Schedule")]
-        public async Task<ActionResult> UpdateSchedule(int JobId)
+        public async Task<ActionResult> UpdateSchedule()
         {
             try
             {
-                var dbsche = await _ScheduleRepo.GetSchedule(JobId);
+                var dbsche = await _ScheduleRepo.GetSche();
                 if (dbsche == null)
                     return NotFound();
-                await _ScheduleRepo.UpdateSchedule(dbsche, JobId);
+                await _ScheduleRepo.UpdateSchedule(dbsche);
                 return NoContent();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
