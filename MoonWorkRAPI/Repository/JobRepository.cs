@@ -53,19 +53,6 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-/*        public async Task<IEnumerable<JobModel>> GetRunningJobs()
-        {
-            var query = "SELECT JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId" +
-                "   FROM Job" +
-                "   WHERE IsUse = '1'";
-
-            using (var connection = _context.CreateConnection())
-            {
-                var jobs = await connection.QueryAsync<JobModel>(query);
-                return jobs.ToList();
-            }
-        }*/
-
 
 
 

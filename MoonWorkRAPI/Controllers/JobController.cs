@@ -39,7 +39,7 @@ namespace MoonWorkRAPI.Controllers
         }
 
         [HttpGet]
-        [Route("{JobId}", Name ="JobByJobId")]
+        [Route("{JobId}", Name = "JobByJobId")]
         public async Task<ActionResult<JobModel>> GetJob(int JobId)
         {
             try
@@ -56,26 +56,7 @@ namespace MoonWorkRAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-/*
-        [HttpGet]
-        [Route("{JobId}", Name = "RunningJob")]
-        public async Task<ActionResult<List<JobModel>>> GetRunningJobs()
-        {
-            try
-            {
-                var job = await _jobRepo.GetRunningJobs();
-                if (job == null)
-                    return NotFound();
 
-                return Ok(job);
-            }
-            catch (Exception ex)
-            {
-                //log error
-                return StatusCode(500, ex.Message);
-            }
-        }
-*/
         // 추후엔 Spring에서 객체를 던져줘서 CreateJob(JobModel job) 으로 인자를 받아와야 할 것 같음.
         [HttpPost("create")]
         public async Task<ActionResult> CreateJob()
