@@ -20,13 +20,11 @@ namespace MoonWorkRAPI.Controllers
         //run 시킬 host 찾기
         [HttpGet]
         [Route("host/find")]
-        public async Task<Action<List<HostModel>>> GetHost()
+        public async Task<ActionResult<List<HostModel>>> GetHost()
         {
             try
             {
                 var host = await _HostRepo.GetHost();
-                if (host == null)
-                    return NotFound();
 
                 return Ok(host);
             }
@@ -39,14 +37,14 @@ namespace MoonWorkRAPI.Controllers
         //특정 host에게 run 시킨 후 업데이트
         [HttpPut]
         [Route("host")]
-        public async Task<Action> UpdateSchedule()
+        public async Task<ActionResult> UpdateHost(HostModel host)
         {
             try
             {
                 var dbhost = await _HostRepo.GetHost();
                 if (dbhost == null)
                     return NotFound();
-                await _HostRepo.UpdateSchedule(dbhost);
+                await _HostRepo.UpdateHost(host);
                 return NoContent();
             }
             catch (Exception ex)
