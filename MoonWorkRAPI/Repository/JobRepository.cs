@@ -10,7 +10,6 @@ namespace MoonWorkRAPI.Repository
     {
         public Task<IEnumerable<JobModel>> GetJobs();
         public Task<JobModel> GetJob(int JobId);
-/*        public Task<IEnumerable<JobModel>> GetRunningJobs();*/
         public Task CreateJob(JobModel job);
         public Task UpdateJob(int JobId, JobModel job);
         public Task DeleteJob(int JobId);
