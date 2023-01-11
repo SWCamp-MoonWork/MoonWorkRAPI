@@ -24,6 +24,7 @@ namespace MoonWorkRAPI.Controllers
          * public async Task<ActionResult<List<MemberModel>>> Get() == 비동기 문법
          */
         [HttpGet]
+        [Route("list")]
         public async Task<ActionResult<List<JobModel>>> GetJobs()
         {
             try
