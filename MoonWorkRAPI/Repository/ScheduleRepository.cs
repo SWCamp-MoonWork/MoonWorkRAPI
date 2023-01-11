@@ -35,15 +35,15 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // view랑 열결할 때 삭제해도 되는 부분
+        // update에 필요한 select
         public async Task<ScheduleModel> GetSche()
         {
             var query = "SELECT ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, ScheduleStartDT, ScheduleEndDT, SaveDate, UserId"
-                + " From Schedule WHERE ScheduleId = '15'";
+                + " From Schedule";
 
             using (var connection = _context.CreateConnection())
             {
-                var schedule = await connection.QuerySingleOrDefaultAsync<ScheduleModel>(query);
+                var schedule = await connection.QueryFirstOrDefaultAsync<ScheduleModel>(query);
                 return schedule;
             }
         }

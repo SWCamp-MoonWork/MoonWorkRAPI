@@ -10,7 +10,7 @@ namespace MoonWorkRAPI.Repository
     {
         public Task<IEnumerable<JobModel>> GetJobs();
         public Task<JobModel> GetJob(int JobId);
-/*        public Task<IEnumerable<JobModel>> GetRunningJobs();*/
+        public Task<JobModel> GetJobAllInfo(int JobId);
         public Task CreateJob(JobModel job);
         public Task UpdateJob(int JobId, JobModel job);
         public Task DeleteJob(int JobId);
@@ -53,7 +53,16 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        public async Task<JobModel> GetJob(int JobId)
+        {
+            var query = "";
 
+            using (var connection = _context.CreateConnection())
+            {
+                var job = await connection.QuerySingleOrDefaultAsync<JobModel>(query, new { JobId })
+                    return job;
+            }
+        }
 
 
         // Job 생성하기
@@ -96,7 +105,7 @@ namespace MoonWorkRAPI.Repository
 
             var param = new DynamicParameters();
             param.Add("JobId", JobId);
-            param.Add("JobName", "UpdateTest"); //job.JobName 넣어야함
+            param.Add("JobName", job.JobName); //job.JobName 넣어야함
             param.Add("IsUse", job.IsUse);
             param.Add("WorkflowName", job.WorkflowName);
             param.Add("WorkflowBlob", job.WorkflowBlob);
