@@ -104,7 +104,7 @@ namespace MoonWorkRAPI.Repository
             param.Add("SaveDate", schedule.SaveDate);
             param.Add("UserId", schedule.UserId);
 
-            using(var conn = _context.CreateConnection())
+            using (var conn = _context.CreateConnection())
             {
                 await conn.ExecuteAsync(query, param);
             }
