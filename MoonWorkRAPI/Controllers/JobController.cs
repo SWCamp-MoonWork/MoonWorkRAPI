@@ -57,6 +57,120 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        //Running 중인 전체 job list 조회
+        [HttpGet]
+        [Route("running", Name = "R-J-053")]
+        public async Task<ActionResult<List<JobModel>>> GetRunningJobs()
+        {
+            try
+            {
+                var runningJobs = await _jobRepo.GetRunningJobs();
+                return Ok(runningJobs);
+            }
+            catch (Exception ex)
+            {
+                //log error
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        //등록된 총 작업 개수
+        [HttpGet]
+        [Route("totalnum")]
+        public async Task<ActionResult> GetRegistNum()
+        {
+            try
+            {
+                var registnum = await _jobRepo.GetRegistNum();
+                return Ok(registnum);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // 오늘 추가된 작업 개수
+        [HttpGet]
+        [Route("addtoday")]
+        public async Task<ActionResult> GetAddToday()
+        {
+            try
+            {
+                var addtoday = await _jobRepo.GetAddToday();
+                return Ok(addtoday);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        //스케줄 등록이 안된 작업 개수
+        [HttpGet]
+        [Route("notregist")]
+        public async Task<ActionResult> GetNotRegist()
+        {
+            try
+            {
+                var notregist = await _jobRepo.GetNotRegist();
+                return Ok(notregist);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // 오늘 시작된 작업 개수
+        [HttpGet]
+        [Route("startschedule")]
+        public async Task<ActionResult> GetStartSchedule()
+        {
+            try
+            {
+                var startsche = await _jobRepo.GetStartSchedule();
+                return Ok(startsche);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // 성공 실패 여부 작업 개수
+        [HttpGet]
+        [Route("sucesstoday")]
+        public async Task<ActionResult> GetSuccess()
+        {
+            try
+            {
+                var success = await _jobRepo.GetSuccess();
+                return Ok(success);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        //job의 모든 정보 가져오기
+        [HttpGet]
+        [Route("{JobId}/all")]
+        public async Task<ActionResult> GetJobAllInfo()
+        {
+            try
+            {
+                var allinfo = await _jobRepo.GetJobAllInfo();
+                return Ok(allinfo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         // 추후엔 Spring에서 객체를 던져줘서 CreateJob(JobModel job) 으로 인자를 받아와야 할 것 같음.
         [HttpPost("create")]
         public async Task<ActionResult> CreateJob()

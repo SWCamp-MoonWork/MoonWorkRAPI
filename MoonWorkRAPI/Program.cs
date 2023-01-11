@@ -18,6 +18,11 @@ builder.Services.AddScoped<IHostRepository, HostRepository>();
 builder.Services.AddScoped<IRunRepository, RunRepository>();
 builder.Services.AddControllers();
 
+builder.WebHost.ConfigureKestrel(opt =>
+{
+    opt.ListenAnyIP(5000);
+});
+
 var app = builder.Build();
 app.UseCors("DocumentationOrigin");
 app.UseSwagger();
