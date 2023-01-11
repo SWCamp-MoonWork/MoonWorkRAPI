@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 namespace MoonWorkRAPI.Controllers
 {
     [ApiController]
-    [Route("v1/host")]
+    [Route("v1")]
     public class HostController : ControllerBase
     {
         private readonly IHostRepository _HostRepo;
