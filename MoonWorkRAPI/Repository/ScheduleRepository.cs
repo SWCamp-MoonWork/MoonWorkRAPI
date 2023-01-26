@@ -7,7 +7,7 @@ namespace MoonWorkRAPI.Repository
     public interface IScheduleRepository
     {
         public Task<IEnumerable<ScheduleModel>> GetSchedule(int JobId);
-        public Task<ScheduleModel> GetSche();
+/*        public Task<ScheduleModel> GetSche(long ScheduleId);*/
         public Task CreateSchedule(ScheduleModel schedule);
         public Task UpdateSchedule(ScheduleModel schedule);
         public Task DeleteSchedule(int JobId);
@@ -35,35 +35,36 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // view랑 열결할 때 삭제해도 되는 부분
-        public async Task<ScheduleModel> GetSche()
+/*        // 특정 schedule 가져오기
+        public async Task<ScheduleModel> GetSche(long ScheduleId)
         {
             var query = "SELECT ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, ScheduleStartDT, ScheduleEndDT, SaveDate, UserId"
-                + " From Schedule WHERE ScheduleId = '15'";
+                + " From Schedule WHERE ScheduleId = @ScheduleId";
 
             using (var connection = _context.CreateConnection())
             {
-                var schedule = await connection.QuerySingleOrDefaultAsync<ScheduleModel>(query);
-                return schedule;
+                var sche = await connection.QuerySingleOrDefaultAsync<ScheduleModel>(query, new { ScheduleId });
+                return sche;
             }
-        }
+        }*/
 
+        //입력할때 JobId 2개가 같아야 값이 들어감
         //특정 job에 대한 스케줄 등록
         public async Task CreateSchedule(ScheduleModel schedule)
         {
             var query = "INSERT INTO Schedule " +
-                " (ScheduleId, JobId, ScheduleName, IsUse, CronExpression, OneTimeOccurDT, ScheduleType, ScheduleStartDT, ScheduleEndDT, SaveDate, UserId) " +
-                " VALUES" +
-                " (@ScheduleId, @JobId, @ScheduleName, @IsUse, @CronExpression, @OneTimeOccurDT, @ScheduleType, @ScheduleStartDT, @ScheduleEndDT, @SaveDate, @UserId)";
+                "  (ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, CronExpression,  ScheduleStartDT, ScheduleEndDT, SaveDate, UserId) " +
+                "  VALUES" +
+                "  (@ScheduleId, @JobId, @ScheduleName, @IsUse, @ScheduleType, @OneTimeOccurDT, @CronExpression, @ScheduleStartDT, @ScheduleEndDT, @SaveDate, @UserId)";
 
             var param = new DynamicParameters();
             param.Add("ScheduleId", schedule.ScheduleId);
             param.Add("JobId", schedule.JobId);
             param.Add("ScheduleName", schedule.ScheduleName);
             param.Add("IsUse", schedule.IsUse);
-            param.Add("CronExpression", schedule.CronExpression);
             param.Add("ScheduleType", schedule.ScheduleType);
             param.Add("OneTimeOccurDT", schedule.OneTimeOccurDT);
+            param.Add("CronExpression", schedule.CronExpression);
             param.Add("ScheduleStartDT", schedule.ScheduleStartDT);
             param.Add("ScheduleEndDT", schedule.ScheduleEndDT);
             param.Add("SaveDate", schedule.SaveDate);
@@ -79,6 +80,7 @@ namespace MoonWorkRAPI.Repository
         public async Task UpdateSchedule(ScheduleModel schedule)
         {
             var query = "UPDATE Schedule SET " +
+                " ScheduleId = @ScheduleId, " +
                 " JobId = @JobId, " +
                 " ScheduleName = @ScheduleName, " +
                 " IsUse = @IsUse, " +

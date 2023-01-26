@@ -38,6 +38,23 @@ namespace MoonWorkRAPI.Controllers
         // 특정 job에 대한 schedule 생성
         [HttpPost("{JobId}/Schedule")]
         /*        [Route("{JobId}/Schedule")]*/
+        public ActionResult<ScheduleModel> Create(ScheduleModel schedule)
+        {
+            try
+            {
+                _ScheduleRepo.CreateSchedule(schedule);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+/*        // 특정 job에 대한 schedule 생성
+        [HttpPost("{JobId}/Schedule")]
+        *//*        [Route("{JobId}/Schedule")]*//*
         public async Task<ActionResult> CreateSchedule()
         {
             try
@@ -64,19 +81,18 @@ namespace MoonWorkRAPI.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }
+        }*/
 
+        // 값 넣을때 jobid가 둘다 같아야 함
         // 특정 job에 대한 schedule 수정
         [HttpPut]
         [Route("{JobId}/Schedule")]
-        public async Task<ActionResult> UpdateSchedule()
+        public ActionResult<ScheduleModel> UpdateSchedule(ScheduleModel schedule)
         {
             try
             {
-                var dbsche = await _ScheduleRepo.GetSche();
-                if (dbsche == null)
-                    return NotFound();
-                await _ScheduleRepo.UpdateSchedule(dbsche);
+                _ScheduleRepo.UpdateSchedule(schedule);
+                
                 return NoContent();
             }
             catch (Exception ex)
@@ -84,18 +100,36 @@ namespace MoonWorkRAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+        /*        // 특정 job에 대한 schedule 수정
+                [HttpPut]
+                [Route("{JobId}/Schedule")]
+                public async Task<ActionResult> UpdateSchedule()
+                {
+                    try
+                    {
+                        var dbsche = await _ScheduleRepo.GetSche();
+                        if (dbsche == null)
+                            return NotFound();
+                        await _ScheduleRepo.UpdateSchedule(dbsche);
+                        return NoContent();
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, ex.Message);
+                    }
+                }*/
 
         // 특정 job에 대한 schedule 삭제
         [HttpDelete]
         [Route("{JobId}/Schedule")]
-        public async Task<ActionResult> DeleteSchedule(int JobId)
+        public IActionResult DeleteSchedule(int JobId)
         {
             try
             {
-                var dbsche = await _ScheduleRepo.GetSchedule(JobId);
-                if (dbsche == null)
-                    return NotFound();
-                await _ScheduleRepo.DeleteSchedule(JobId);
+               _ScheduleRepo.DeleteSchedule(JobId);
+
                 return NoContent();
             }
             catch (Exception ex)
@@ -103,5 +137,24 @@ namespace MoonWorkRAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        /*        // 특정 job에 대한 schedule 삭제
+                [HttpDelete]
+                [Route("{JobId}/Schedule")]
+                public async Task<ActionResult> DeleteSchedule(int JobId)
+                {
+                    try
+                    {
+                        var dbsche = await _ScheduleRepo.GetSchedule(JobId);
+                        if (dbsche == null)
+                            return NotFound();
+                        await _ScheduleRepo.DeleteSchedule(JobId);
+                        return NoContent();
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, ex.Message);
+                    }
+                }*/
     }
 }

@@ -1,7 +1,19 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using MoonWorkRAPI.Context;
 using MoonWorkRAPI.Models;
+using Microsoft.Data.SqlClient;
+using MySqlConnector;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using static com.sun.net.httpserver.Authenticator;
+using java.nio.charset;
+using DocumentFormat.OpenXml.Office.Word;
+using System;
+using System.IO;
+using System.Data;
+using System.Data.SqlClient;
+using sun.util.resources.cldr.sk;
 
 namespace MoonWorkRAPI.Repository
 {
@@ -12,17 +24,21 @@ namespace MoonWorkRAPI.Repository
         public Task<IEnumerable<JobModel>> GetJobs();
         public Task<JobModel> GetJob(int JobId);
         public Task<IEnumerable<JobModel>> GetRunningJobs();
-        public Task<JobModel> GetRegistNum();
-        public Task<JobModel> GetAddToday();
-        public Task<JobModel> GetNotRegist();
-        public Task<JobModel> GetStartSchedule();
-        public Task<JobModel> GetSuccess();
-        public Task<JobModel> GetJobAllInfo();
-        public Task CreateJob(JobModel job);
-        public Task UpdateJob(int JobId, JobModel job);
+/*        public Task<JobModel> GetRegistNum();*/
+        public object GetRegistNum();
+        public object GetAddToday();
+        public object GetNotRegist();
+        public object GetStartSchedule();
+        public object GetSuccess();
+        public object GetFailed();
+        public JobAllInfoModel GetJobAllInfo(long JobId);
+        public Task CreateJob(JobModel job, byte[] Blob);
+        public Task UpdateJob(JobModel job);
         public Task DeleteJob(int JobId);
-
     }
+
+
+
 
 
     public class JobRepository : IJobRepository
@@ -70,89 +86,112 @@ namespace MoonWorkRAPI.Repository
             using (var connection = _context.CreateConnection())
             {
                 var runningJobs = await connection.QueryAsync<JobModel>(query);
+                Console.Write(runningJobs);
                 return runningJobs.ToList();
             }
         }
 
         // 등록된 job 개수
-        public async Task<JobModel> GetRegistNum()
+        public object GetRegistNum()
         {
             var query = "SELECT COUNT(*) FROM Job";
 
             using (var connection = _context.CreateConnection())
             {
-                var Regist = await connection.QuerySingleOrDefaultAsync<JobModel>(query);
+                var Regist = connection.QueryFirstOrDefault(query);
+                Console.Write(Regist);
                 return Regist;
+
             }
         }
 
+
         // 오늘 추가된 작업 개수
-        public async Task<JobModel> GetAddToday()
+        public object GetAddToday()
         {
             var query = "SELECT COUNT(*) FROM Job WHERE SaveDate = DATE(NOW())";
             using (var connection = _context.CreateConnection())
             {
-                var add = await connection.QuerySingleOrDefaultAsync<JobModel>(query);
+                var add = connection.QuerySingleOrDefault(query);
                 return add;
             }
         }
 
         // 스케줄 등록이 안된 작업 개수
-        public async Task<JobModel> GetNotRegist()
+        public object GetNotRegist()
         {
-            var query = "SELECT COUNT(*) FROM Schedule WHERE JobId = null";
+            var query = "SELECT COUNT(*) FROM Job j left outer join Schedule s on j.JobId = s.JobId where s.ScheduleId is null";
             using (var connection = _context.CreateConnection())
             {
-                var notregist = await connection.QuerySingleOrDefaultAsync<JobModel>(query);
+                var notregist = connection.QuerySingleOrDefault(query);
                 return notregist;
             }
         }
 
         //오늘 시작된 작업 개수
-        public async Task<JobModel> GetStartSchedule()
+        public object GetStartSchedule()
         {
-            var query = "SELECT COUNT(*) FROM Schedule WHERE SaveDate = DATE(NOW())";
+            var query = "SELECT COUNT(*) FROM Job WHERE DATE_FORMAT(SaveDate, \"%Y-%m-%d\") = CURDATE()";
             using (var connection = _context.CreateConnection())
             {
-                var start = await connection.QuerySingleOrDefaultAsync<JobModel>(query);
+                var start = connection.QuerySingleOrDefault(query);
                 return start;
             }
         }
 
         // 성공 실패 여부 작업 개수
-        public async Task<JobModel> GetSuccess()
+        public object GetSuccess()
         {
-            var query = "";
+            var query = "SELECT COUNT(*) FROM Job WHERE Status = 'success'";
+
             using (var connection = _context.CreateConnection())
             {
-                var success = await connection.QuerySingleOrDefaultAsync<JobModel>(query);
+                var success = connection.QuerySingleOrDefault(query);
                 return success;
             }
         }
 
+        // 성공 실패 여부 작업 개수
+        public object GetFailed()
+        {
+            var query = "SELECT COUNT(*) FROM Job WHERE Status = 'failed'";
+            using (var connection = _context.CreateConnection())
+            {
+                var failed = connection.QuerySingleOrDefault(query);
+                return failed;
+            }
+        }
 
 
         // job의 모든 정보
-        public async Task<JobModel> GetJobAllInfo()
+        public JobAllInfoModel GetJobAllInfo(long JobId)
         {
             var query = "SELECT j.JobId, j.JobName, j.WorkflowName, h.HostName, h.HostIP, h.IsUse, u.UserName, j.SaveDate, j.Note, s.ScheduleId, s.ScheduleName, "
                 + " s.IsUse, s.ScheduleType, s.OneTimeOccurDT, s.ScheduleStartDT, s.ScheduleEndDT, s.SaveDate "
-                + " From User u, Job j, Schedule s, Host h where u.UserId = j.UserId and h.HostId = u.UserId and j.JobId = s.ScheduleId";
+                + " from Job j left outer join (Schedule s, Host h, Run r, User u) on "
+                + " (u.UserId = j.UserId and j.JobId = s.JobId and j.JobId = r.JobId and h.HostId = r.HostId) where j.JobId = @JobId";
 
             using (var connection = _context.CreateConnection())
             {
-                var all = await connection.QuerySingleOrDefaultAsync<JobModel>(query);
+                var all = connection.QuerySingleOrDefault<JobAllInfoModel>(query, new { JobId });
                 return all;
             }
         }
 
-        // Job 생성하기
-        public async Task CreateJob(JobModel job)
+        public async Task CreateJob(JobModel job, byte[] Blob)
         {
             var query = "INSERT INTO Job" +
                 "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
                 "   VALUES" +
                 "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";
+
+            FileStream stream = new FileStream("@WorkflowBlob", FileMode.Open, FileAccess.Read);
+            BinaryReader reader = new BinaryReader(stream);
+
+            byte[] blob = reader.ReadBytes((int)stream.Length);
+
+            SqlParameter par = new SqlParameter("@WorkflowBlob", SqlDbType.Image, blob.Length);
+            par.Value = blob;
 
             var param = new DynamicParameters();
             param.Add("JobId", job.JobId);
@@ -170,7 +209,194 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        public async Task UpdateJob(int JobId, JobModel job)
+        /*        public async Task CreateJob(JobModel job)
+                {
+                    *//*            var query = "INSERT INTO Job" +
+                                    "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
+                                    "   VALUES" +
+                                    "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";*//*
+
+
+                    string SQL;
+                    UInt32 FileSize;
+                    byte[] blob;
+                    FileStream fs;
+
+                    string ConString = "Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True;";
+
+                    try
+                    {
+                        MySqlConnection con = new MySqlConnection(ConString);
+                        MySqlCommand cmd = new MySqlCommand();
+                        BinaryReader br;
+
+
+                        fs = new FileStream(blob, FileMode.Open, FileAccess.Read);
+                        br = new BinaryReader(fs);
+                        FileSize = (UInt32)fs.Length;
+
+                        *//*blob = new byte[FileSize];*//*
+                        blob = br.ReadBytes((int)fs.Length);
+                        fs.Read(blob, 0, (int)FileSize);
+                        fs.Close();
+
+                        con.Open();
+
+                        SQL = "INSERT INTO Job" +
+                        "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
+                        "   VALUES" +
+                        "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";
+
+                        cmd.Connection = con;
+                        cmd.CommandText = SQL;
+                        cmd.Parameters.AddWithValue("@JobId", job.JobId);
+                        cmd.Parameters.AddWithValue("@JobName", job.JobName);
+                        cmd.Parameters.AddWithValue("@IsUse", job.IsUse);
+                        cmd.Parameters.AddWithValue("@WorkflowName", job.WorkflowName);
+                        cmd.Parameters.AddWithValue("@WorkflowBlob", job.WorkflowBlob);
+                        cmd.Parameters.AddWithValue("@Note", job.Note);
+                        cmd.Parameters.AddWithValue("@SaveDate", job.SaveDate);
+                        cmd.Parameters.AddWithValue("@UserId", job.UserId);
+
+                        cmd.ExecuteNonQuery();
+
+                        Console.Write("success!!");
+
+                        var param = new DynamicParameters();
+                        param.Add("JobId", job.JobId);
+                        param.Add("JobName", job.JobName);
+                        param.Add("IsUse", job.IsUse);
+                        param.Add("WorkflowName", job.WorkflowName);
+                        param.Add("WorkflowBlob", job.WorkflowBlob);
+                        param.Add("Note", job.Note);
+                        param.Add("SaveDate", job.SaveDate);
+                        param.Add("UserId", job.UserId);
+
+                        using (var conn = _context.CreateConnection())
+                        {
+                            await conn.ExecuteAsync(SQL, cmd);
+                        }
+
+                        con.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Write("failed");
+                    }
+                }*/
+
+        /*        private byte[] GetImageByte(string filePath)
+                {
+                    string connectionStr = "Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True;";
+                    SqlConnection conn;
+                    FileStream fs;
+                    BinaryReader br;
+                    BinaryWriter bw;
+                    fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    br = new BinaryReader(fs);
+
+                    byte[] imageBytes = br.ReadBytes((int)fs.Length);
+
+                    br.Close();
+                    fs.Close();
+
+                    return imageBytes;
+                }*/
+
+        /*        public void Insert(JobModel job, string fileName)
+                {
+                    String ConnectionStr = "Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True;";
+                    SqlConnection conn = new SqlConnection(ConnectionStr);
+                    conn = new SqlConnection(ConnectionStr);
+                    byte[] imageBytes = this.GetImageByte(fileName);
+                    string sql = "INSERT INTO Job " +
+                        " (WorkflowBlob) " +
+                        " VALUES " +
+                        " (@WorkflowBlob) " +
+                        " WHERE JobId = @JobId ";
+
+                    SqlCommand myCommand = new SqlCommand(sql, conn);
+                    SqlParameter parm = new SqlParameter("@WorkflowBlob", SqlDbType.Image, imageBytes.Length);
+                    parm.Value = imageBytes;
+                    myCommand.Parameters.Add(parm);
+                }*/
+
+        /*        public async Task CreateJob(JobModel job, byte[] fileName)
+                {
+        *//*            byte[] ba = Encoding.UTF8.GetBytes(fileName);
+                    Console.WriteLine(ba);
+                    Console.WriteLine("{0}", ba);
+                    Console.WriteLine("{0}", System.Text.Encoding.Default.GetString(ba));*//*
+
+                    var query = "INSERT INTO Job" +
+                        "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
+                        "   VALUES" +
+                        "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";
+
+                    String ConnectionStr = "Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True;";
+                    SqlConnection conn = new SqlConnection(ConnectionStr);
+                    conn.Open();
+                    SqlCommand MyCommand = new SqlCommand("INSERT INTO Job" +
+                        "   (JobId, JobName, IsUse, WorkflowName, Note, SaveDate, UserId)" +
+                        "   VALUES" +
+                        "   (@JobId, @JobName, @IsUse, @WorkflowName,  @Note, @SaveDate, @UserId)", conn);
+                    SqlDataReader myReader = MyCommand.ExecuteReader(CommandBehavior.SequentialAccess);
+
+        *//*            FileStream fs;
+                    BinaryReader br;
+                    BinaryWriter bw;
+
+                    int bufferSize = 100;
+                    byte[] outbyte = new byte[bufferSize];
+                    long retval;
+                    long startIndex;*//*
+
+                    var param = new DynamicParameters();
+                    param.Add("JobId", job.JobId);
+                    param.Add("JobName", job.JobName);
+                    param.Add("IsUse", job.IsUse);
+                    param.Add("WorkflowName", job.WorkflowName);
+                    param.Add("WorkflowBlob", job.WorkflowBlob);
+                    param.Add("Note", job.Note);
+                    param.Add("SaveDate", job.SaveDate);
+                    param.Add("UserId", job.UserId);
+
+                    conn = new SqlConnection(ConnectionStr);
+                    byte[] ba = Encoding.UTF8.GetBytes(fileName);
+                    byte[] imageBytes = this.GetImageByte(ba);
+                    Stream stream = new FileStream("WorkflowBlob", FileMode.OpenOrCreate);
+                    using (BinaryWriter wr = new BinaryWriter(stream))
+                    {
+                        wr.Write(imageBytes);
+                    }
+
+                    string sql = "INSERT INTO Job " +
+                        " (WorkflowBlob) " +
+                        " VALUES " +
+                        " (@WorkflowBlob) ";
+        *//*            " WHERE JobId = @JobId ";*//*
+
+                    SqlCommand myCommand = new SqlCommand(sql, conn);
+                    SqlParameter WorkflowBlob = new SqlParameter("@WorkflowBlob", SqlDbType.Image, imageBytes.Length);
+                    WorkflowBlob.Value = imageBytes;
+                    myCommand.Parameters.Add(WorkflowBlob);
+
+                    conn.Open();
+                    myCommand.ExecuteNonQuery();
+                    conn.Close();
+
+
+                    using (var connec = _context.CreateConnection())
+                    {
+                        await connec.ExecuteAsync(query, param);
+                    }
+
+                    myReader.Close();
+                    conn.Close();
+                }*/
+
+
+        public async Task UpdateJob(JobModel job)
         {
             var query = "UPDATE Job SET" +
                 "   JobName = @JobName," +
@@ -183,8 +409,8 @@ namespace MoonWorkRAPI.Repository
                 "   WHERE JobId = @JobId";
 
             var param = new DynamicParameters();
-            param.Add("JobId", JobId);
-            param.Add("JobName", "UpdateTest"); //job.JobName 넣어야함
+            param.Add("JobId", job.JobId);
+            param.Add("JobName", job.JobName);
             param.Add("IsUse", job.IsUse);
             param.Add("WorkflowName", job.WorkflowName);
             param.Add("WorkflowBlob", job.WorkflowBlob);

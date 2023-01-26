@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata;
+﻿using com.sun.org.apache.xpath.@internal.axes;
+using java.sql;
 
 namespace MoonWorkRAPI.Models
 {
@@ -8,7 +9,7 @@ namespace MoonWorkRAPI.Models
         public string? JobName { set; get; }
         public int IsUse { set; get; }
         public string? WorkflowName { set; get; }
-        public Byte[]? WorkflowBlob { set; get; }
+        public byte[]? WorkflowBlob { set; get; }
         public string? Note { set; get; }
         public DateTime SaveDate { set; get; }
         public long UserId { set; get; }

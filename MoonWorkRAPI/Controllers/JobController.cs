@@ -1,32 +1,48 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MoonWorkRAPI.Models;
 using MoonWorkRAPI.Repository;
+using Microsoft.AspNetCore.Authorization;
+using System.Net.Mime;
+
+//
+using System.Net;
+using com.sun.corba.se.impl.orbutil.concurrent;
+using System.Text;
+
+//
+
 
 namespace MoonWorkRAPI.Controllers
 {
+
+    //
+
+
+
+
+
+
+
+    //
+
 
     [ApiController]
     [Route("v1/job")]
     public class JobController : ControllerBase
     {
         private readonly IJobRepository _jobRepo;
+
         public JobController(IJobRepository jobRepo)
         {
             _jobRepo = jobRepo;
         }
 
-        /*
-         * # 비동기(Asynchronous)
-         * 서버에게 데이터를 요청한 후 요청에 따른 응답을 계속 기다리지 않아도되며 
-         * 다른 외부 활동을 수행하여도되고 서버에게 다른 요청사항을 보내도 상관없다.
-         * 
-         * public async Task<ActionResult<List<MemberModel>>> Get() == 비동기 문법
-         */
+
         [HttpGet]
         [Route("list")]
         public async Task<ActionResult<List<JobModel>>> GetJobs()
         {
+
             try
             {
                 var jobs = await _jobRepo.GetJobs();
@@ -78,27 +94,28 @@ namespace MoonWorkRAPI.Controllers
         //등록된 총 작업 개수
         [HttpGet]
         [Route("totalnum")]
-        public async Task<ActionResult> GetRegistNum()
+        public object GetRegistNum()
         {
             try
             {
-                var registnum = await _jobRepo.GetRegistNum();
-                return Ok(registnum);
+                var registnum = _jobRepo.GetRegistNum();
+                return registnum;
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
 
+
         // 오늘 추가된 작업 개수
         [HttpGet]
         [Route("addtoday")]
-        public async Task<ActionResult> GetAddToday()
+        public object GetAddToday()
         {
             try
             {
-                var addtoday = await _jobRepo.GetAddToday();
+                var addtoday = _jobRepo.GetAddToday();
                 return Ok(addtoday);
             }
             catch (Exception ex)
@@ -110,11 +127,11 @@ namespace MoonWorkRAPI.Controllers
         //스케줄 등록이 안된 작업 개수
         [HttpGet]
         [Route("notregist")]
-        public async Task<ActionResult> GetNotRegist()
+        public object GetNotRegist()
         {
             try
             {
-                var notregist = await _jobRepo.GetNotRegist();
+                var notregist = _jobRepo.GetNotRegist();
                 return Ok(notregist);
             }
             catch (Exception ex)
@@ -126,11 +143,11 @@ namespace MoonWorkRAPI.Controllers
         // 오늘 시작된 작업 개수
         [HttpGet]
         [Route("startschedule")]
-        public async Task<ActionResult> GetStartSchedule()
+        public object GetStartSchedule()
         {
             try
             {
-                var startsche = await _jobRepo.GetStartSchedule();
+                var startsche = _jobRepo.GetStartSchedule();
                 return Ok(startsche);
             }
             catch (Exception ex)
@@ -139,14 +156,14 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
-        // 성공 실패 여부 작업 개수
+        // 성공 작업 개수
         [HttpGet]
-        [Route("sucesstoday")]
-        public async Task<ActionResult> GetSuccess()
+        [Route("success")]
+        public object GetSuccess()
         {
             try
             {
-                var success = await _jobRepo.GetSuccess();
+                var success = _jobRepo.GetSuccess();
                 return Ok(success);
             }
             catch (Exception ex)
@@ -155,15 +172,34 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        // 실패 작업 개수
         [HttpGet]
-        //job의 모든 정보 가져오기
-        [HttpGet]
-        [Route("{JobId}/all")]
-        public async Task<ActionResult> GetJobAllInfo()
+        [Route("failed")]
+        public object GetFailed()
         {
             try
             {
-                var allinfo = await _jobRepo.GetJobAllInfo();
+                var failed = _jobRepo.GetFailed();
+                return Ok(failed);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        //job의 모든 정보 가져오기
+        [HttpGet]
+        [Route("{JobId}/GetJobAllInfo")]
+        public ActionResult GetJobAllInfo(long JobId)
+        {
+            try
+            {
+                var allinfo =  _jobRepo.GetJobAllInfo(JobId);
+                if (allinfo == null)
+                    return NotFound();
+
                 return Ok(allinfo);
             }
             catch (Exception ex)
@@ -172,70 +208,56 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+
         // 추후엔 Spring에서 객체를 던져줘서 CreateJob(JobModel job) 으로 인자를 받아와야 할 것 같음.
         [HttpPost("create")]
-        public async Task<ActionResult> CreateJob()
+        /*        [Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]*/
+        /*        [Consumes(MediaTypeNames.Application.Json)]*/
+        public ActionResult<JobModel> Create(JobModel job, byte[] Blob)
         {
             try
             {
-                // 임시 테스트 코드
-                JobModel job = new JobModel();
+                _jobRepo.CreateJob(job, Blob);
 
-                byte[] bytes = { 0, 0, 0, 0, 1 };
-                job.JobId = 100;
-                job.JobName = "HelloWorld";
-                job.IsUse = 0;
-                job.WorkflowName = "HelloWorld.java";
-                job.WorkflowBlob = bytes;
-                job.Note = "HelloWorld 출력하기";
-                job.SaveDate = DateTime.Now;
-                job.UserId = 4;
-
-                await _jobRepo.CreateJob(job);
-
-                return Ok("Job 등록 성공!");
+                return NoContent();
             }
             catch (Exception ex)
             {
-                //log error
                 return StatusCode(500, ex.Message);
             }
         }
+
+
 
         [HttpPut("update")]
-        public async Task<ActionResult> UpdateJob(int JobId)
+        /*        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]*/
+        /*        [Consumes(MediaTypeNames.Application.Json)]*/
+        public ActionResult<JobModel> Update(JobModel job)
         {
             try
             {
-                var dbJob = await _jobRepo.GetJob(JobId);
-                if (dbJob == null)
-                    return NotFound();
+                _jobRepo.UpdateJob(job);
 
-                await _jobRepo.UpdateJob(JobId, dbJob);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                //log error
                 return StatusCode(500, ex.Message);
             }
         }
 
-        [HttpDelete("delete")]
-        public async Task<ActionResult> DeleteJob(int JobId)
+        [HttpDelete("delete/{JobId}")]
+        public IActionResult Delete(int JobId)
         {
             try
             {
-                var dbJob = await _jobRepo.GetJob(JobId);
-                if (dbJob == null)
-                    return NotFound();
+                _jobRepo.DeleteJob(JobId);
 
-                await _jobRepo.DeleteJob(JobId);
                 return NoContent();
             }
+
             catch (Exception ex)
             {
-                //log error
                 return StatusCode(500, ex.Message);
             }
         }
