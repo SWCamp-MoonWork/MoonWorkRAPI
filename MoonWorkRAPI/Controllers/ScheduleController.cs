@@ -16,10 +16,27 @@ namespace MoonWorkRAPI.Controllers
             _ScheduleRepo = ScheduleRepo;
         }
 
+        //스케쥴 전체 SELECT
+        [HttpGet]
+        [Route("schedule")]
+        public async Task<ActionResult<List<ScheduleModel>>> GetSchedules()
+        {
+            try
+            {
+                var schedule = await _ScheduleRepo.GetSchedules();
+                return Ok(schedule);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         // 특정 job에 대한 schedule 가져오기
         [HttpGet]
         [Route("{JobId}/Schedule", Name = "ScheduleByJobId")]
-        public async Task<ActionResult<List<ScheduleModel>>> GetSchedule(int JobId)
+        public async Task<ActionResult<ScheduleModel>> GetSchedule(int JobId)
         {
             try
             {

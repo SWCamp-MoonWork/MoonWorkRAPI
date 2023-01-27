@@ -6,7 +6,8 @@ namespace MoonWorkRAPI.Repository
 {
     public interface IScheduleRepository
     {
-        public Task<IEnumerable<ScheduleModel>> GetSchedule(int JobId);
+        public Task<IEnumerable<ScheduleModel>> GetSchedules();
+        public Task<ScheduleModel> GetSchedule(int JobId);
 /*        public Task<ScheduleModel> GetSche(long ScheduleId);*/
         public Task CreateSchedule(ScheduleModel schedule);
         public Task UpdateSchedule(ScheduleModel schedule);
@@ -22,16 +23,29 @@ namespace MoonWorkRAPI.Repository
             _context = context;
         }
 
+        //전체 스케쥴 가져오기
+        public async Task<IEnumerable<ScheduleModel>> GetSchedules()
+        {
+            var query = "SELECT ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, CronExpression, ScheduleStartDT, " +
+                " ScheduleEndDT, SaveDate, UserId from Schedule;";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var schedules = await connection.QueryAsync<ScheduleModel>(query);
+                return schedules.ToList();
+            }
+        }
+
         //특정 job에 대한 스케줄 가져오기
-        public async Task<IEnumerable<ScheduleModel>> GetSchedule(int JobId)
+        public async Task<ScheduleModel> GetSchedule(int JobId)
         {
             var query = "SELECT ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, ScheduleStartDT, ScheduleEndDT, SaveDate, UserId"
                 + " from Schedule where JobId = @JobId";
 
             using (var connection = _context.CreateConnection())
             {
-                var schedule = await connection.QueryAsync<ScheduleModel>(query, new { JobId });
-                return schedule.ToList();
+                var schedule = await connection.QuerySingleOrDefaultAsync<ScheduleModel>(query, new { JobId });
+                return schedule;
             }
         }
 

@@ -15,17 +15,6 @@ using System.Text;
 namespace MoonWorkRAPI.Controllers
 {
 
-    //
-
-
-
-
-
-
-
-    //
-
-
     [ApiController]
     [Route("v1/job")]
     public class JobController : ControllerBase
@@ -209,18 +198,15 @@ namespace MoonWorkRAPI.Controllers
         }
 
 
-        // 추후엔 Spring에서 객체를 던져줘서 CreateJob(JobModel job) 으로 인자를 받아와야 할 것 같음.
         [HttpPost("create")]
-        /*        [Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]*/
-        /*        [Consumes(MediaTypeNames.Application.Json)]*/
-        public ActionResult<JobModel> Create(JobModel job)
+        public Object CreateJob(JobModel job)
         {
             try
             {
-                Console.WriteLine(" Hello1 ");
+                Console.WriteLine(" hello1 ");
                 _jobRepo.CreateJob(job);
 
-                Console.WriteLine(" Hello2 ");
+                Console.WriteLine(" hello2 ");
                 return NoContent();
             }
             catch (Exception ex)
@@ -228,7 +214,21 @@ namespace MoonWorkRAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+/*        [HttpPost("{JobId}/Schedule")]
+        *//*        [Route("{JobId}/Schedule")]*//*
+        public ActionResult<ScheduleModel> Create(ScheduleModel schedule)
+        {
+            try
+            {
+                _ScheduleRepo.CreateSchedule(schedule);
 
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }*/
 
 
         [HttpPut("update")]

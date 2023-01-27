@@ -35,7 +35,7 @@ namespace MoonWorkRAPI.Repository
         public object GetSuccess();
         public object GetFailed();
         public JobAllInfoModel GetJobAllInfo(long JobId);
-        public Task CreateJob(JobModel job);
+        public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
         public Task DeleteJob(int JobId);
     }
@@ -157,14 +157,8 @@ namespace MoonWorkRAPI.Repository
         // 성공 실패 여부 작업 개수
         public object GetFailed()
         {
-            string str = "Hello World";
-            byte[] ba = Encoding.UTF8.GetBytes(str);
-            Console.WriteLine(ba);
-            string str1 = Encoding.UTF8.GetString(ba);
-            Console.WriteLine(str1);
-            Console.WriteLine(Encoding.UTF8.GetString(ba));
-
             var query = "SELECT COUNT(*) FROM Job WHERE Status = 'failed'";
+
             using (var connection = _context.CreateConnection())
             {
                 var failed = connection.QuerySingleOrDefault(query);
@@ -187,6 +181,47 @@ namespace MoonWorkRAPI.Repository
                 return all;
             }
         }
+
+        //job 생성
+        public void CreateJob(JobModel job)
+        {
+            Console.WriteLine(" hello ");
+            /*string filePath = "job.WorkflowBlob";*/
+            var query1 = "INSERT INTO Job " +
+                "   (JobId, JobName, IsUse, WorkflowName, Note, SaveDate, UserId) " +
+                "   VALUES " +
+                "   (@JobId, @JobName, @IsUse, @WorkflowName, @Note, @SaveDate, @UserId) ";
+
+            var query2 = "Update Job SET " +
+                "WorkflowBlob = @WorkflowBlob WHERE JobId = @JobId";
+
+            FileStream stream = new FileStream("job.WorkflowBlob", FileMode.Open, FileAccess.Read);
+            BinaryReader reader = new BinaryReader(stream);
+
+            byte[] blob = reader.ReadBytes((int)stream.Length);
+
+            SqlParameter par = new SqlParameter("@Job.WorkflowBlob", SqlDbType.NChar, blob.Length);
+            par.Value = blob;
+
+            Console.WriteLine(par);
+
+            var param = new DynamicParameters();
+            param.Add("JobId", job.JobId);
+            param.Add("JobName", job.JobName);
+            param.Add("IsUse", job.IsUse);
+            param.Add("WorkflowName", job.WorkflowName);
+            param.Add("WorkflowBlob", job.WorkflowBlob);
+            param.Add("Note", job.Note);
+            param.Add("SaveDate", job.SaveDate);
+            param.Add("UserId", job.UserId);
+
+            using (var conn = _context.CreateConnection())
+            {
+                conn.Execute(query1, param);
+                conn.Execute(query2, par);
+            }
+        }
+
 
         /*        public async Task CreateJob(JobModel job)
                 {
@@ -245,47 +280,7 @@ namespace MoonWorkRAPI.Repository
                     }
                 }*/
 
-        public async Task CreateJob(JobModel job)
-        {
-            Console.WriteLine(" hello ");
-            /*string filePath = "job.WorkflowBlob";*/
-            var query1 = "INSERT INTO Job" +
-                "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
-                "   VALUES" +
-                "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";
 
-            var query2 = "Update Job SET " +
-                "WorkflowBlob = @WorkflowBlob WHERE JobId = @JobId";
-
-            FileStream stream = new FileStream("job.WorkflowBlob", FileMode.Open, FileAccess.Read);
-            BinaryReader reader = new BinaryReader(stream);
-
-            byte[] blob = reader.ReadBytes((int)stream.Length);
-            string bytes = Encoding.UTF8.GetString(blob);
-            SqlParameter par = new SqlParameter("@Job.WorkflowBlob", SqlDbType.NChar, bytes.Length);
-            par.Value = bytes;
-
-            Console.WriteLine(par);
-
-            var param = new DynamicParameters();
-            param.Add("JobId", job.JobId);
-            param.Add("JobName", job.JobName);
-            param.Add("IsUse", job.IsUse);
-            param.Add("WorkflowName", job.WorkflowName);
-            param.Add("WorkflowBlob", job.WorkflowBlob);
-            param.Add("Note", job.Note);
-            param.Add("SaveDate", job.SaveDate);
-            param.Add("UserId", job.UserId);
-
-            using (var conn = _context.CreateConnection())
-            {
-                await conn.ExecuteAsync(query1, param);
-            }
-            using (var conn = _context.CreateConnection())
-            {
-                await conn.ExecuteAsync(query2, par);
-            }
-        }
 
         /*        public async Task CreateJob(JobModel job)
                 {
