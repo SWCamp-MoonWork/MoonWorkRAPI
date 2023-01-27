@@ -213,12 +213,14 @@ namespace MoonWorkRAPI.Controllers
         [HttpPost("create")]
         /*        [Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]*/
         /*        [Consumes(MediaTypeNames.Application.Json)]*/
-        public ActionResult<JobModel> Create(JobModel job, byte[] Blob)
+        public ActionResult<JobModel> Create(JobModel job)
         {
             try
             {
-                _jobRepo.CreateJob(job, Blob);
+                Console.WriteLine(" Hello1 ");
+                _jobRepo.CreateJob(job);
 
+                Console.WriteLine(" Hello2 ");
                 return NoContent();
             }
             catch (Exception ex)

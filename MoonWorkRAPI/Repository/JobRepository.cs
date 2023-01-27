@@ -14,6 +14,9 @@ using System.IO;
 using System.Data;
 using System.Data.SqlClient;
 using sun.util.resources.cldr.sk;
+using com.sun.org.apache.xpath.@internal.operations;
+using java.rmi.server;
+using System.Runtime.Intrinsics.Arm;
 
 namespace MoonWorkRAPI.Repository
 {
@@ -32,7 +35,7 @@ namespace MoonWorkRAPI.Repository
         public object GetSuccess();
         public object GetFailed();
         public JobAllInfoModel GetJobAllInfo(long JobId);
-        public Task CreateJob(JobModel job, byte[] Blob);
+        public Task CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
         public Task DeleteJob(int JobId);
     }
@@ -154,6 +157,13 @@ namespace MoonWorkRAPI.Repository
         // 성공 실패 여부 작업 개수
         public object GetFailed()
         {
+            string str = "Hello World";
+            byte[] ba = Encoding.UTF8.GetBytes(str);
+            Console.WriteLine(ba);
+            string str1 = Encoding.UTF8.GetString(ba);
+            Console.WriteLine(str1);
+            Console.WriteLine(Encoding.UTF8.GetString(ba));
+
             var query = "SELECT COUNT(*) FROM Job WHERE Status = 'failed'";
             using (var connection = _context.CreateConnection())
             {
@@ -178,20 +188,84 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        public async Task CreateJob(JobModel job, byte[] Blob)
+        /*        public async Task CreateJob(JobModel job)
+                {
+                    string filePath = @"job.WorkflowBlob";
+                    byte[] bytes = Encoding.UTF8.GetBytes(filePath);
+                    FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    BinaryReader reader = new BinaryReader(fs);
+                    Console.WriteLine(" Hello ");
+                    byte[] BlobValue = reader.ReadBytes((int)fs.Length);
+
+                    fs.Close();
+                    reader.Close();
+
+                    var param = new DynamicParameters();
+                    param.Add("JobId", job.JobId);
+                    param.Add("JobName", job.JobName);
+                    param.Add("IsUse", job.IsUse);
+                    param.Add("WorkflowName", job.WorkflowName);
+                    param.Add("WorkflowBlob", job.WorkflowBlob);
+                    param.Add("Note", job.Note);
+                    param.Add("SaveDate", job.SaveDate);
+                    param.Add("UserId", job.UserId);
+                    using (var connect = _context.CreateConnection())
+                    {
+                        SqlConnection BlobsDataBaseConn = new SqlConnection("Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True");
+                        SqlCommand SaveBlobeCommand = new SqlCommand();
+                        SaveBlobeCommand.Connection = BlobsDataBaseConn;
+                        SaveBlobeCommand.CommandType = CommandType.Text;
+                        SaveBlobeCommand.CommandText = "INSERT INTO Job" +
+                       "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
+                       "   VALUES" +
+                       "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";
+
+                        SqlParameter BlobFileNameParam = new SqlParameter("@WorkflowBlob", SqlDbType.NChar);
+                        SqlParameter BlobFileParam = new SqlParameter("@WorkflowBlob", SqlDbType.Binary);
+                        SaveBlobeCommand.Parameters.Add(BlobFileParam);
+                        BlobFileParam.Value = BlobValue;
+
+                        try
+                        {
+                            SaveBlobeCommand.Connection.Open();
+                            SaveBlobeCommand.ExecuteNonQuery();
+                            Console.Write("Hello World");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Write(ex);
+                            Console.Write("Error");
+                        }
+                        finally
+                        {
+                            SaveBlobeCommand.Connection.Close();
+                        }
+
+                        await connect.ExecuteAsync(SaveBlobeCommand.CommandText, param);
+                    }
+                }*/
+
+        public async Task CreateJob(JobModel job)
         {
-            var query = "INSERT INTO Job" +
+            Console.WriteLine(" hello ");
+            /*string filePath = "job.WorkflowBlob";*/
+            var query1 = "INSERT INTO Job" +
                 "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId)" +
                 "   VALUES" +
                 "   (@JobId, @JobName, @IsUse, @WorkflowName, @WorkflowBlob, @Note, @SaveDate, @UserId)";
 
-            FileStream stream = new FileStream("@WorkflowBlob", FileMode.Open, FileAccess.Read);
+            var query2 = "Update Job SET " +
+                "WorkflowBlob = @WorkflowBlob WHERE JobId = @JobId";
+
+            FileStream stream = new FileStream("job.WorkflowBlob", FileMode.Open, FileAccess.Read);
             BinaryReader reader = new BinaryReader(stream);
 
             byte[] blob = reader.ReadBytes((int)stream.Length);
+            string bytes = Encoding.UTF8.GetString(blob);
+            SqlParameter par = new SqlParameter("@Job.WorkflowBlob", SqlDbType.NChar, bytes.Length);
+            par.Value = bytes;
 
-            SqlParameter par = new SqlParameter("@WorkflowBlob", SqlDbType.Image, blob.Length);
-            par.Value = blob;
+            Console.WriteLine(par);
 
             var param = new DynamicParameters();
             param.Add("JobId", job.JobId);
@@ -205,7 +279,11 @@ namespace MoonWorkRAPI.Repository
 
             using (var conn = _context.CreateConnection())
             {
-                await conn.ExecuteAsync(query, param);
+                await conn.ExecuteAsync(query1, param);
+            }
+            using (var conn = _context.CreateConnection())
+            {
+                await conn.ExecuteAsync(query2, par);
             }
         }
 
@@ -222,7 +300,7 @@ namespace MoonWorkRAPI.Repository
                     byte[] blob;
                     FileStream fs;
 
-                    string ConString = "Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True;";
+                    string ConString = "Server=rds-moonwork.co3bxrfx8ip8.ap-northeast-2.rds.amazonaws.com; Database = Moonwork; Uid = rdsmw; Pwd = dkfeldptm;Allow User Variables=True";
 
                     try
                     {
