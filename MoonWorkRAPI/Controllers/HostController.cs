@@ -17,6 +17,25 @@ namespace MoonWorkRAPI.Controllers
             _HostRepo = hostRepo;
         }
 
+        //host 전체 불러오기
+        [HttpGet("host/list")]
+        public async Task<ActionResult<List<HostModel>>> GetHosts()
+        {
+            try
+            {
+                var host = await _HostRepo.GetHosts();
+                if(host == null)
+                {
+                    return NotFound();
+                }
+                return Ok(host);
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         //run 시킬 host 찾기
         [HttpGet]
         [Route("host/find")]

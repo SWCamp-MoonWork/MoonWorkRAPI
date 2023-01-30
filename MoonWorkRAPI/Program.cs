@@ -17,6 +17,15 @@ builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<IHostRepository, HostRepository>();
 builder.Services.AddScoped<IRunRepository, RunRepository>();
 builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(jsonOptions =>
+    {
+        // Respect Properties Casing on Schemas #383
+        // https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/383
+        // Swagger의 기본 케이스인 카멜 케이스를 적용하지 않고, 컨택스트 모델의 케이스를 그대로 유지하도록 하기 위한 조치.
+        jsonOptions.JsonSerializerOptions.PropertyNamingPolicy = null;
+        jsonOptions.JsonSerializerOptions.IgnoreNullValues = true;
+    });
 
 builder.WebHost.ConfigureKestrel(opt =>
 {

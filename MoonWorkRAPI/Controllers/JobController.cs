@@ -63,6 +63,21 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        // job + UserName select
+        [HttpGet("joblist_username")]
+        public async Task<ActionResult<List<JobUserNameModel>>> GetJobUserName()
+        {
+            try
+            {
+                var get = await _jobRepo.GetJobUserName();
+                return Ok(get);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         //Running 중인 전체 job list 조회
         [HttpGet]
         [Route("running", Name = "R-J-053")]
@@ -90,7 +105,7 @@ namespace MoonWorkRAPI.Controllers
                 var registnum = _jobRepo.GetRegistNum();
                 return registnum;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -178,14 +193,14 @@ namespace MoonWorkRAPI.Controllers
         }
 
 
-        //job의 모든 정보 가져오기
+        //job에 따른 유저네임, 스케쥴 정보 가져오기
         [HttpGet]
-        [Route("{JobId}/GetJobAllInfo")]
-        public ActionResult GetJobAllInfo(long JobId)
+        [Route("{JobId}/GetJob_UserSchedule")]
+        public ActionResult GetJob_UserSchedule(long JobId)
         {
             try
             {
-                var allinfo =  _jobRepo.GetJobAllInfo(JobId);
+                var allinfo = _jobRepo.GetJob_UserSchedule(JobId);
                 if (allinfo == null)
                     return NotFound();
 
@@ -197,6 +212,24 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        //job에 따른 Host, Run 정보 가져오기
+        [HttpGet]
+        [Route("{JobId}/GetJob_HostRun")]
+        public ActionResult GetJob_HostRun(long JobId)
+        {
+            try
+            {
+                var allinfo = _jobRepo.GetJob_HostRun(JobId);
+                if (allinfo == null)
+                    return NotFound();
+
+                return Ok(allinfo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
         [HttpPost("create")]
         public Object CreateJob(JobModel job)
@@ -214,21 +247,21 @@ namespace MoonWorkRAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-/*        [HttpPost("{JobId}/Schedule")]
-        *//*        [Route("{JobId}/Schedule")]*//*
-        public ActionResult<ScheduleModel> Create(ScheduleModel schedule)
-        {
-            try
-            {
-                _ScheduleRepo.CreateSchedule(schedule);
+        /*        [HttpPost("{JobId}/Schedule")]
+                *//*        [Route("{JobId}/Schedule")]*//*
+                public ActionResult<ScheduleModel> Create(ScheduleModel schedule)
+                {
+                    try
+                    {
+                        _ScheduleRepo.CreateSchedule(schedule);
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }*/
+                        return NoContent();
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, ex.Message);
+                    }
+                }*/
 
 
         [HttpPut("update")]
@@ -239,6 +272,21 @@ namespace MoonWorkRAPI.Controllers
             try
             {
                 _jobRepo.UpdateJob(job);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("updateIsUse")]
+        public ActionResult<JobModel> UpdateIsUse(JobModel job)
+        {
+            try
+            {
+                _jobRepo.UpdateIsUse(job);
 
                 return NoContent();
             }

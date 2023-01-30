@@ -7,6 +7,7 @@ namespace MoonWorkRAPI.Repository
     public interface IScheduleRepository
     {
         public Task<IEnumerable<ScheduleModel>> GetSchedules();
+        public Task<IEnumerable<ScheduleWorkflowNameModel>> GetScheduleWorkflowName();
         public Task<ScheduleModel> GetSchedule(int JobId);
 /*        public Task<ScheduleModel> GetSche(long ScheduleId);*/
         public Task CreateSchedule(ScheduleModel schedule);
@@ -35,7 +36,16 @@ namespace MoonWorkRAPI.Repository
                 return schedules.ToList();
             }
         }
+        public async Task<IEnumerable<ScheduleWorkflowNameModel>> GetScheduleWorkflowName()
+        {
+            var query = "SELECT s.*, j.WorkflowName from Job j, Schedule s where j.JobId = s.JobId";
 
+            using(var connection = _context.CreateConnection())
+            {
+                var schedule = await connection.QueryAsync<ScheduleWorkflowNameModel>(query);
+                return schedule.ToList();
+            }
+        }
         //특정 job에 대한 스케줄 가져오기
         public async Task<ScheduleModel> GetSchedule(int JobId)
         {
@@ -69,7 +79,7 @@ namespace MoonWorkRAPI.Repository
             var query = "INSERT INTO Schedule " +
                 "  (ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, CronExpression,  ScheduleStartDT, ScheduleEndDT, SaveDate, UserId) " +
                 "  VALUES" +
-                "  (@ScheduleId, @JobId, @ScheduleName, @IsUse, @ScheduleType, @OneTimeOccurDT, @CronExpression, @ScheduleStartDT, @ScheduleEndDT, @SaveDate, @UserId)";
+                "  (@ScheduleId, @JobId, @ScheduleName, true, @ScheduleType, @OneTimeOccurDT, @CronExpression, @ScheduleStartDT, @ScheduleEndDT, @SaveDate, @UserId)";
 
             var param = new DynamicParameters();
             param.Add("ScheduleId", schedule.ScheduleId);

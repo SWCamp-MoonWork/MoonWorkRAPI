@@ -32,7 +32,7 @@ namespace MoonWorkRAPI.Repository
                 + " (@RunId, @StartDT, @EndDT, @State, @HostId, @SaveDate)";
 
             var param = new DynamicParameters();
-            param.Add("RunId", run.RunId);
+            /*param.Add("RunId", run.RunId);*/
             param.Add("StartDT", run.StartDT);
             param.Add("EndDT", run.EndDT);
             param.Add("State", run.State);

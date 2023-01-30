@@ -6,6 +6,7 @@ namespace MoonWorkRAPI.Repository
 {
     public interface IHostRepository
     {
+        public Task<IEnumerable<HostModel>> GetHosts();
         public Task<IEnumerable<HostModel>> GetHost();
         public Task UpdateHost(HostModel host);
     }
@@ -18,6 +19,17 @@ namespace MoonWorkRAPI.Repository
             _context = context;
         }
 
+        //host 전부 다 가져오기
+        public async Task<IEnumerable<HostModel>> GetHosts()
+        {
+            var query = "SELECT * FROM Host";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var host = await connection.QueryAsync<HostModel>(query);
+                return host.ToList();
+            }
+        }
         public async Task<IEnumerable<HostModel>> GetHost()
         {
             var query = "SELECT HostId, HostName, IsUse, Role, EndPoint, Note, SaveDate, UserId "
