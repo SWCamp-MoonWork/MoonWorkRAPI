@@ -8,6 +8,7 @@ namespace MoonWorkRAPI.Repository
     {
         public Task<IEnumerable<HostModel>> GetHosts();
         public Task<IEnumerable<HostModel>> GetHost();
+        public Task<IEnumerable<HostModel>> GetHost_IsUseTrue();
         public Task UpdateHost(HostModel host);
     }
     public class HostRepository : IHostRepository
@@ -30,6 +31,8 @@ namespace MoonWorkRAPI.Repository
                 return host.ToList();
             }
         }
+
+        //run 시킬 host 찾기
         public async Task<IEnumerable<HostModel>> GetHost()
         {
             var query = "SELECT HostId, HostName, IsUse, Role, EndPoint, Note, SaveDate, UserId "
@@ -42,6 +45,17 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        // IsUse가 true인 Host 추출
+        public async Task<IEnumerable<HostModel>> GetHost_IsUseTrue()
+        {
+            var query = "SELECT * FROM Host WHERE IsUse = true";
+;
+            using (var connection = _context.CreateConnection())
+            {
+                var host = await connection.QueryAsync<HostModel>(query);
+                return host.ToList();
+            }
+        }
         public async Task UpdateHost(HostModel host)
         {
             var query = "UPDATE Host SET "

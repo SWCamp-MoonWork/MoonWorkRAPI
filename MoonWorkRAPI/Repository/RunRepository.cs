@@ -8,7 +8,7 @@ namespace MoonWorkRAPI.Repository
     {
         public Task CreateRun(RunModel run);
         public Task<RunModel> GetRunInfo(int RunId);
-        public Task<RunModel> GetRun();
+/*        public Task<RunModel> GetRun();*/
         public Task<IEnumerable<RunModel>> GetRunbyJobId(int JobId);
         public Task<IEnumerable<RunModel>> GetRunbyDate(DateTime FromDT, DateTime ToDT);
         public Task UpdateRun(RunModel run);
@@ -27,15 +27,16 @@ namespace MoonWorkRAPI.Repository
         public async Task CreateRun(RunModel run)
         {
             var query = "INSERT INTO Run "
-                + " (RunId, StartDT, EndDT, State, HostId, SaveDate) "
+                + " (StartDT, EndDT, State, JobId, HostId, SaveDate) "
                 + " VALUES "
-                + " (@RunId, @StartDT, @EndDT, @State, @HostId, @SaveDate)";
+                + " (@StartDT, @EndDT, @State, @JobId, @HostId, SYSDATE())";
 
             var param = new DynamicParameters();
             /*param.Add("RunId", run.RunId);*/
             param.Add("StartDT", run.StartDT);
             param.Add("EndDT", run.EndDT);
             param.Add("State", run.State);
+            param.Add("JobId", run.JobId);
             param.Add("HostId", run.HostId);
             param.Add("SaveDate", run.SaveDate);
 
@@ -59,7 +60,7 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // run select 업데이트에 필요한거
+/*        // run select 업데이트에 필요한거
         public async Task<RunModel> GetRun()
         {
             var query = "SELECT RunId, StartDT, EndDT, State, JobId, HostId, SaveDate "
@@ -70,7 +71,7 @@ namespace MoonWorkRAPI.Repository
                 var run = await connection.QueryFirstOrDefaultAsync<RunModel>(query);
                 return run;
             }
-        }
+        }*/
 
         //특정 JobId로 인해 발생한 run 조회
         public async Task<IEnumerable<RunModel>> GetRunbyJobId(int JobId)
@@ -102,7 +103,6 @@ namespace MoonWorkRAPI.Repository
         // 특정 RunId에 대한 정보 업데이트
         public async Task UpdateRun(RunModel run)
         {
-
             var query = "UPDATE Run SET " +
                 " StartDT = @StartDT, " +
                 " EndDT = @EndDT, " +

@@ -9,7 +9,7 @@
         public DateTime? JobSaveDate { set; get; }
         public String? JobNote { set; get; }
         public string? UserName { set; get; }
-        public String? ScheduleId { set; get; }
+        public long? ScheduleId { set; get; }
         public String? ScheduleName { set; get; }
         public Boolean? ScheduleIsUse { get; set; }
         public Boolean? ScheduleType { set; get; }

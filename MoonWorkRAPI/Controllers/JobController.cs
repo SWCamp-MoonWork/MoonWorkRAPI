@@ -26,12 +26,10 @@ namespace MoonWorkRAPI.Controllers
             _jobRepo = jobRepo;
         }
 
-
         [HttpGet]
         [Route("list")]
         public async Task<ActionResult<List<JobModel>>> GetJobs()
         {
-
             try
             {
                 var jobs = await _jobRepo.GetJobs();
@@ -236,10 +234,8 @@ namespace MoonWorkRAPI.Controllers
         {
             try
             {
-                Console.WriteLine(" hello1 ");
                 _jobRepo.CreateJob(job);
 
-                Console.WriteLine(" hello2 ");
                 return NoContent();
             }
             catch (Exception ex)
@@ -281,7 +277,7 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
-        [HttpPut("updateIsUse")]
+/*        [HttpPut("updateIsUse")]
         public ActionResult<JobModel> UpdateIsUse(JobModel job)
         {
             try
@@ -294,7 +290,7 @@ namespace MoonWorkRAPI.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }
+        }*/
 
         [HttpDelete("delete/{JobId}")]
         public IActionResult Delete(int JobId)

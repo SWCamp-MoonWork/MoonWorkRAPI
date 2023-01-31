@@ -33,12 +33,14 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+
+        // 모든 스케줄의 정보와 파일명
         [HttpGet("scheduleworkflowname")]
-        public async Task<ActionResult<List<ScheduleWorkflowNameModel>>> GetScheduleWorkflowName()
+        public async Task<ActionResult<List<ScheduleWorkflowNameModel>>> GetSchedule_WorkflowName()
         {
             try
             {
-                var schedule = await _ScheduleRepo.GetScheduleWorkflowName();
+                var schedule = await _ScheduleRepo.GetSchedule_WorkflowName();
                 return Ok(schedule);
             }
             catch (Exception ex)
@@ -50,7 +52,7 @@ namespace MoonWorkRAPI.Controllers
         // 특정 job에 대한 schedule 가져오기
         [HttpGet]
         [Route("{JobId}/Schedule", Name = "ScheduleByJobId")]
-        public async Task<ActionResult<ScheduleModel>> GetSchedule(int JobId)
+        public async Task<ActionResult<ScheduleModel>> GetSchedule(long JobId)
         {
             try
             {
@@ -58,6 +60,21 @@ namespace MoonWorkRAPI.Controllers
                 if (schedule == null)
                     return NotFound();
 
+                return Ok(schedule);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // 특정 jobid에 대한 job의 job IsUse, Workflowname, schedule 의 모든 정보 가져오기
+        [HttpGet("Schedule_IsUseSelect")]
+        public async Task<ActionResult<List<Schedule_IsUseSelectModel>>> GetSchedule_IsUseSelect()
+        {
+            try
+            {
+                var schedule = await _ScheduleRepo.GetSchedule_IsUseSelect();
                 return Ok(schedule);
             }
             catch (Exception ex)
@@ -104,7 +121,7 @@ namespace MoonWorkRAPI.Controllers
         // 특정 job에 대한 schedule 삭제
         [HttpDelete]
         [Route("{JobId}/Schedule")]
-        public IActionResult DeleteSchedule(int JobId)
+        public IActionResult DeleteSchedule(long JobId)
         {
             try
             {

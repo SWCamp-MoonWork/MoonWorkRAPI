@@ -45,7 +45,7 @@ namespace MoonWorkRAPI.Repository
         public Job_HostRunModel GetJob_HostRun(long JobId);
         public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
-        public Task UpdateIsUse(JobModel job);
+/*        public Task UpdateIsUse(JobModel job);*/
         public Task DeleteJob(int JobId);
     }
 
@@ -136,7 +136,7 @@ namespace MoonWorkRAPI.Repository
         // 오늘 추가된 작업 개수
         public object GetAddToday()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE SaveDate = DATE(NOW())";
+            var query = "SELECT COUNT(*) FROM Job WHERE DATE_FORMAT(SaveDate, \"%Y-%m-%d\") = CURDATE()";
             using (var connection = _context.CreateConnection())
             {
                 var add = connection.QuerySingleOrDefault(query);
@@ -158,7 +158,7 @@ namespace MoonWorkRAPI.Repository
         //오늘 시작된 작업 개수
         public object GetStartSchedule()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE DATE_FORMAT(SaveDate, \"%Y-%m-%d\") = CURDATE()";
+            var query = "SELECT COUNT(*) FROM Schedule s, Job j WHERE DATE_FORMAT(s.ScheduleStartDT, \"%Y-%m-%d\") = CURDATE() and j.JobId = s.JobId";
             using (var connection = _context.CreateConnection())
             {
                 var start = connection.QuerySingleOrDefault(query);
@@ -227,8 +227,8 @@ namespace MoonWorkRAPI.Repository
         //job 생성
         public void CreateJob(JobModel job)
         {
-            string test = job.WorkflowBlob;
-            byte[] ba = System.Text.Encoding.Default.GetBytes(test);
+/*            string test = job.WorkflowBlob;
+            byte[] ba = System.Text.Encoding.Default.GetBytes(test);*/
 
             /*for(int i = 0; i < ba.Length; i++)
             {
@@ -240,9 +240,6 @@ namespace MoonWorkRAPI.Repository
                 "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId) " +
                 "   VALUES " +
                 "   (@JobId, @JobName, true, @WorkflowName, @WorkflowBlob, @Note, SYSDATE(), @UserId) ";
-
-            var query2 = "Update Job SET " +
-                "   WorkflowBlob = @WorkflowBlob WHERE JobId = @JobId";
 
             var param = new DynamicParameters();
             param.Add("JobId", job.JobId);
@@ -263,12 +260,12 @@ namespace MoonWorkRAPI.Repository
         public async Task UpdateJob(JobModel job)
         {
 
-            string test = job.WorkflowBlob;
-            byte[] ba = System.Text.Encoding.Default.GetBytes(test);
+/*            string test = job.WorkflowBlob;
+            byte[] ba = System.Text.Encoding.Default.GetBytes(test);*/
 
             var query = "UPDATE Job SET" +
                 "   JobName = @JobName," +
-/*                "   IsUse = @IsUse," +*/
+                "   IsUse = @IsUse," +
                 "   WorkflowName = @WorkflowName," +
                 "   WorkflowBlob = @WorkflowBlob," +
                 "   Note = @Note," +
@@ -279,7 +276,7 @@ namespace MoonWorkRAPI.Repository
             var param = new DynamicParameters();
             param.Add("JobId", job.JobId);
             param.Add("JobName", job.JobName);
-/*            param.Add("IsUse", job.IsUse);*/
+            param.Add("IsUse", job.IsUse);
             param.Add("WorkflowName", job.WorkflowName);
             param.Add("WorkflowBlob", job.WorkflowBlob);
             param.Add("Note", job.Note);
@@ -291,7 +288,8 @@ namespace MoonWorkRAPI.Repository
                 await conn.ExecuteAsync(query, param);
             }
         }
-        // Job change IsUse
+
+/*        // Job change IsUse
         public async Task UpdateIsUse(JobModel job)
         {
             var query = "Update Job Set IsUse = @IsUse where JobId = @JobId";
@@ -304,7 +302,7 @@ namespace MoonWorkRAPI.Repository
             {
                 await conn.ExecuteAsync(query, param);
             }
-        }
+        }*/
         public async Task DeleteJob(int JobId)
         {
             var query = "DELETE FROM Job WHERE JobId = @JobId";

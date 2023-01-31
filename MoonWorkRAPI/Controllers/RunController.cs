@@ -21,22 +21,13 @@ namespace MoonWorkRAPI.Controllers
         //run 시킨 후 run 정보 기록
         [HttpPost]
         [Route("run")]
-        public async Task<ActionResult> CreateRun()
+        public ActionResult<RunModel> CreateRun(RunModel run)
         {
             try
             {
-                RunModel run = new RunModel();
+                _RunRepo.CreateRun(run);
 
-                run.StartDT = DateTime.Now;
-                run.EndDT = DateTime.Now;
-                run.State = false;
-                run.JobId = 3;
-                run.HostId = 2;
-                run.SaveDate = DateTime.Now;
-
-                await _RunRepo.CreateRun(run);
-
-                return Ok("run 기록 성공");
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -98,14 +89,12 @@ namespace MoonWorkRAPI.Controllers
         //특정 RunId에 대한 정보 업데이트
         [HttpPut]
         [Route("run/{RunId}")]
-        public async Task<ActionResult> UpdateRun()
+        public ActionResult<RunModel> UpdateRun(RunModel run)
         {
             try
             {
-                var uptrun = await _RunRepo.GetRun();
-                if (uptrun == null)
-                    return NotFound();
-                await _RunRepo.UpdateRun(uptrun);
+                _RunRepo.UpdateRun(run);
+
                 return NoContent();
             }
             catch (Exception ex)

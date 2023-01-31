@@ -38,7 +38,7 @@ namespace MoonWorkRAPI.Controllers
 
         //run 시킬 host 찾기
         [HttpGet]
-        [Route("host/find")]
+        [Route("host/findtorun")]
         public async Task<ActionResult<List<HostModel>>> GetHost()
         {
             try
@@ -52,6 +52,23 @@ namespace MoonWorkRAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        // IsUse가 true인 Host 추출
+        [HttpGet("host/isusetrue")]
+        public async Task<ActionResult<List<HostModel>>> GetHost_IsUseTrue()
+        {
+            try
+            {
+                var host = await _HostRepo.GetHost_IsUseTrue();
+                return Ok(host);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+           
+        }
+
 
         //특정 host에게 run 시킨 후 업데이트
         [HttpPut]

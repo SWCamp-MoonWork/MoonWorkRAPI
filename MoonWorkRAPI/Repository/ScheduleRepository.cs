@@ -7,12 +7,13 @@ namespace MoonWorkRAPI.Repository
     public interface IScheduleRepository
     {
         public Task<IEnumerable<ScheduleModel>> GetSchedules();
-        public Task<IEnumerable<ScheduleWorkflowNameModel>> GetScheduleWorkflowName();
-        public Task<ScheduleModel> GetSchedule(int JobId);
+        public Task<IEnumerable<ScheduleWorkflowNameModel>> GetSchedule_WorkflowName();
+        public Task<ScheduleModel> GetSchedule(long JobId);
+        public Task<IEnumerable<Schedule_IsUseSelectModel>> GetSchedule_IsUseSelect();
 /*        public Task<ScheduleModel> GetSche(long ScheduleId);*/
         public Task CreateSchedule(ScheduleModel schedule);
         public Task UpdateSchedule(ScheduleModel schedule);
-        public Task DeleteSchedule(int JobId);
+        public Task DeleteSchedule(long JobId);
     }
 
     public class ScheduleRepository : IScheduleRepository
@@ -36,7 +37,9 @@ namespace MoonWorkRAPI.Repository
                 return schedules.ToList();
             }
         }
-        public async Task<IEnumerable<ScheduleWorkflowNameModel>> GetScheduleWorkflowName()
+
+        // 모든 스케줄의 정보와 파일명 가져오기
+        public async Task<IEnumerable<ScheduleWorkflowNameModel>> GetSchedule_WorkflowName()
         {
             var query = "SELECT s.*, j.WorkflowName from Job j, Schedule s where j.JobId = s.JobId";
 
@@ -47,7 +50,7 @@ namespace MoonWorkRAPI.Repository
             }
         }
         //특정 job에 대한 스케줄 가져오기
-        public async Task<ScheduleModel> GetSchedule(int JobId)
+        public async Task<ScheduleModel> GetSchedule(long JobId)
         {
             var query = "SELECT ScheduleId, JobId, ScheduleName, IsUse, ScheduleType, OneTimeOccurDT, ScheduleStartDT, ScheduleEndDT, SaveDate, UserId"
                 + " from Schedule where JobId = @JobId";
@@ -56,6 +59,22 @@ namespace MoonWorkRAPI.Repository
             {
                 var schedule = await connection.QuerySingleOrDefaultAsync<ScheduleModel>(query, new { JobId });
                 return schedule;
+            }
+        }
+
+        //job, schedule에서 IsUse가 둘다 1인 row
+        public async Task<IEnumerable<Schedule_IsUseSelectModel>> GetSchedule_IsUseSelect()
+        {
+            var query = "SELECT j.IsUse as JobIsUse, j.WorkflowName, s.ScheduleId, s.JobId, s.ScheduleName, s.IsUse, " +
+                " s.ScheduleType, s.OneTimeOccurDT, s.CronExpression, " +
+                " s.ScheduleStartDT, s.ScheduleEndDT, s.SaveDate, s.UserId " +
+                " from Job j, Schedule s " +
+                " WHERE j.IsUse = true and s.IsUse = true and j.JobId = s.JobId";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var SelectIsUse = await connection.QueryAsync<Schedule_IsUseSelectModel>(query);
+                return SelectIsUse.ToList();
             }
         }
 
@@ -136,7 +155,8 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        public async Task DeleteSchedule(int ScheduleId)
+        //스케줄 삭제
+        public async Task DeleteSchedule(long ScheduleId)
         {
             var query = "DELETE FROM Schedule WHERE ScheduleId = @ScheduleId";
 
