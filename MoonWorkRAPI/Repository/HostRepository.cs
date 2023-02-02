@@ -8,6 +8,7 @@ namespace MoonWorkRAPI.Repository
     {
         public Task<IEnumerable<HostModel>> GetHosts();
         public Task<IEnumerable<HostModel>> GetHost();
+        public HostModel GetHostId(long HostId);
         public Task<IEnumerable<HostModel>> GetHost_IsUseTrue();
         public Task UpdateHost(HostModel host);
     }
@@ -44,6 +45,19 @@ namespace MoonWorkRAPI.Repository
                 return host.ToList();
             }
         }
+
+        // hostId 찾기
+        public HostModel GetHostId(long hostid)
+        {
+            var query = "SELECT HostId FROM Host WHERE HostId = @HostId";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var host = connection.QuerySingleOrDefault<HostModel>(query, new { hostid });
+                return host;
+            }
+        }
+
 
         // IsUse가 true인 Host 추출
         public async Task<IEnumerable<HostModel>> GetHost_IsUseTrue()

@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 namespace MoonWorkRAPI.Controllers
 {
     [ApiController]
-    [Route("v1")]
+    [Route("v1/host")]
     public class HostController : ControllerBase
     {
         private readonly IHostRepository _HostRepo;
@@ -18,7 +18,7 @@ namespace MoonWorkRAPI.Controllers
         }
 
         //host 전체 불러오기
-        [HttpGet("host/list")]
+        [HttpGet("list")]
         public async Task<ActionResult<List<HostModel>>> GetHosts()
         {
             try
@@ -38,7 +38,7 @@ namespace MoonWorkRAPI.Controllers
 
         //run 시킬 host 찾기
         [HttpGet]
-        [Route("host/findtorun")]
+        [Route("findtorun")]
         public async Task<ActionResult<List<HostModel>>> GetHost()
         {
             try
@@ -53,8 +53,27 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        // hostid 찾기
+        [HttpGet("findhostid")]
+        public ActionResult GetHostId(long HostId)
+        {
+            try
+            {
+                var hostid = _HostRepo.GetHostId(HostId);
+                if (hostid == null)
+                    return NotFound();
+
+                return Ok(hostid);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
         // IsUse가 true인 Host 추출
-        [HttpGet("host/isusetrue")]
+        [HttpGet("isusetrue")]
         public async Task<ActionResult<List<HostModel>>> GetHost_IsUseTrue()
         {
             try
@@ -72,7 +91,7 @@ namespace MoonWorkRAPI.Controllers
 
         //특정 host에게 run 시킨 후 업데이트
         [HttpPut]
-        [Route("host")]
+        [Route("update")]
         public async Task<ActionResult> UpdateHost(HostModel host)
         {
             try

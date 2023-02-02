@@ -3,14 +3,9 @@ using MoonWorkRAPI.Models;
 using MoonWorkRAPI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Mime;
-
-//
 using System.Net;
 using com.sun.corba.se.impl.orbutil.concurrent;
 using System.Text;
-
-//
-
 
 namespace MoonWorkRAPI.Controllers
 {
@@ -199,7 +194,7 @@ namespace MoonWorkRAPI.Controllers
             try
             {
                 var allinfo = _jobRepo.GetJob_UserSchedule(JobId);
-                if (allinfo == null)
+                if (allinfo == null) 
                     return NotFound();
 
                 return Ok(allinfo);
@@ -224,6 +219,24 @@ namespace MoonWorkRAPI.Controllers
                 return Ok(allinfo);
             }
             catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        //job에 대한 JobId, WorkflowName, schedule의 StartDT, EndDT
+        [HttpGet("{JobId}/GetJob_WorkerFromMaster")]
+        public ActionResult GetJob_WorkerFromMaster(long JobId)
+        {
+            try
+            {
+                var str = _jobRepo.GetJob_WorkerFromMaster(JobId);
+                if (str == null)
+                    return NotFound();
+
+                return Ok(str);
+            }
+            catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }

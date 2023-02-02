@@ -43,6 +43,7 @@ namespace MoonWorkRAPI.Repository
         public object GetFailed();
         public Job_UserScheduleModel GetJob_UserSchedule(long JobId);
         public Job_HostRunModel GetJob_HostRun(long JobId);
+        public Job_UserScheduleModel GetJob_WorkerFromMaster(long JobId);
         public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
 /*        public Task UpdateIsUse(JobModel job);*/
@@ -224,6 +225,18 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        //job에 대한 JobId, WorkflowName, schedule의 StartDT, EndDT
+        public Job_UserScheduleModel GetJob_WorkerFromMaster(long JobId)
+        {
+            var query = "SELECT j.JobId, j.WorkflowName, s.ScheduleStartDT, s.ScheduleEndDT FROM Job j, Schedule s WHERE j.JobId = @JobId";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var str = connection.QuerySingleOrDefault<Job_UserScheduleModel>(query);
+                return str;
+            }
+        }
+
         //job 생성
         public void CreateJob(JobModel job)
         {
@@ -236,7 +249,7 @@ namespace MoonWorkRAPI.Repository
             }*/
 
 
-            var query1 = "INSERT INTO Job " +
+            var query = "INSERT INTO Job " +
                 "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId) " +
                 "   VALUES " +
                 "   (@JobId, @JobName, true, @WorkflowName, @WorkflowBlob, @Note, SYSDATE(), @UserId) ";
@@ -253,7 +266,7 @@ namespace MoonWorkRAPI.Repository
 
             using (var conn = _context.CreateConnection())
             {
-                conn.Execute(query1, param);
+                conn.Execute(query, param);
             }
         }
 

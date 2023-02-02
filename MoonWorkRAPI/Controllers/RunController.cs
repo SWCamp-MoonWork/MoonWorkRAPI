@@ -25,9 +25,10 @@ namespace MoonWorkRAPI.Controllers
         {
             try
             {
-                _RunRepo.CreateRun(run);
+                var regist = _RunRepo.CreateRun(run);
 
-                return NoContent();
+                Console.WriteLine(regist);
+                return Ok(regist);
             }
             catch (Exception ex)
             {
@@ -86,7 +87,7 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
-        //특정 RunId에 대한 정보 업데이트
+/*        //특정 RunId에 대한 정보 업데이트
         [HttpPut]
         [Route("run/{RunId}")]
         public ActionResult<RunModel> UpdateRun(RunModel run)
@@ -101,6 +102,6 @@ namespace MoonWorkRAPI.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }
+        }*/
     }
 }

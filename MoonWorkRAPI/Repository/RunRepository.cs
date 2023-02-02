@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using com.sun.corba.se.impl.ior;
+using Dapper;
 using MoonWorkRAPI.Context;
 using MoonWorkRAPI.Models;
 
@@ -6,12 +7,12 @@ namespace MoonWorkRAPI.Repository
 {
     public interface IRunRepository
     {
-        public Task CreateRun(RunModel run);
+        public long CreateRun(RunModel run);
         public Task<RunModel> GetRunInfo(int RunId);
 /*        public Task<RunModel> GetRun();*/
         public Task<IEnumerable<RunModel>> GetRunbyJobId(int JobId);
         public Task<IEnumerable<RunModel>> GetRunbyDate(DateTime FromDT, DateTime ToDT);
-        public Task UpdateRun(RunModel run);
+/*        public Task UpdateRun(RunModel run);*/
     }
 
     public class RunRepository : IRunRepository
@@ -24,7 +25,7 @@ namespace MoonWorkRAPI.Repository
         }
 
         //run 시킨 후 run에 대한 정보 기록
-        public async Task CreateRun(RunModel run)
+        public long CreateRun(RunModel run)
         {
             var query = "INSERT INTO Run "
                 + " (StartDT, EndDT, State, JobId, HostId, SaveDate) "
@@ -32,18 +33,19 @@ namespace MoonWorkRAPI.Repository
                 + " (@StartDT, @EndDT, @State, @JobId, @HostId, SYSDATE())";
 
             var param = new DynamicParameters();
-            /*param.Add("RunId", run.RunId);*/
+/*            param.Add("RunId", run.RunId);*/
             param.Add("StartDT", run.StartDT);
             param.Add("EndDT", run.EndDT);
             param.Add("State", run.State);
             param.Add("JobId", run.JobId);
             param.Add("HostId", run.HostId);
-            param.Add("SaveDate", run.SaveDate);
+/*            param.Add("SaveDate", run.SaveDate);*/
 
             using (var conn = _context.CreateConnection())
             {
-                await conn.ExecuteAsync(query, param);
+                conn.Execute(query, param);
             }
+            return run.RunId;
         }
 
 
@@ -100,7 +102,7 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // 특정 RunId에 대한 정보 업데이트
+/*        // 특정 RunId에 대한 정보 업데이트
         public async Task UpdateRun(RunModel run)
         {
             var query = "UPDATE Run SET " +
@@ -125,6 +127,6 @@ namespace MoonWorkRAPI.Repository
             {
                 await conn.ExecuteAsync(query, param);
             }
-        }
+        }*/
     }
 }
