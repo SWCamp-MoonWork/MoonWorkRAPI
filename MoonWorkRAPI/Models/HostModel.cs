@@ -5,7 +5,7 @@
         public long HostId { get; set; }
         public string? HostName { get; set; }
         public string? HostIp { get; set; }
-        public Boolean IsUse { get; set; }
+        public Boolean? IsUse { get; set; }
         public String? Role { get; set; }
         public String? EndPoint { get; set; }
         public String? Note { get; set; }

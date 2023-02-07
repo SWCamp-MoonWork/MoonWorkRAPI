@@ -8,9 +8,10 @@ namespace MoonWorkRAPI.Repository
     public interface IRunRepository
     {
         public long CreateRun(RunModel run);
-        public Task<RunModel> GetRunInfo(int RunId);
+        public Task<RunModel> GetRunInfo(long RunId);
 /*        public Task<RunModel> GetRun();*/
-        public Task<IEnumerable<RunModel>> GetRunbyJobId(int JobId);
+        public Task<IEnumerable<RunModel>> GetRunbyJobId(long JobId);
+        public Task<IEnumerable<RunModel>> GetJob_RunRecord(long JobId);
         public Task<IEnumerable<RunModel>> GetRunbyDate(DateTime FromDT, DateTime ToDT);
 /*        public Task UpdateRun(RunModel run);*/
     }
@@ -28,12 +29,13 @@ namespace MoonWorkRAPI.Repository
         public long CreateRun(RunModel run)
         {
             var query = "INSERT INTO Run "
-                + " (StartDT, EndDT, State, JobId, HostId, SaveDate) "
+                + " (WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate) "
                 + " VALUES "
-                + " (@StartDT, @EndDT, @State, @JobId, @HostId, SYSDATE())";
+                + " (@WorkflowName, @StartDT, @EndDT, @State, @JobId, @HostId, SYSDATE())";
 
             var param = new DynamicParameters();
-/*            param.Add("RunId", run.RunId);*/
+            /*            param.Add("RunId", run.RunId);*/
+            param.Add("WorkflowName", run.WorkflowName);
             param.Add("StartDT", run.StartDT);
             param.Add("EndDT", run.EndDT);
             param.Add("State", run.State);
@@ -50,9 +52,9 @@ namespace MoonWorkRAPI.Repository
 
 
         // 특정 runid에 대한 정보 가져오기
-        public async Task<RunModel> GetRunInfo(int RunId)
+        public async Task<RunModel> GetRunInfo(long RunId)
         {
-            var query = "SELECT RunId, StartDT, EndDT, State, JobId, HostId, SaveDate "
+            var query = "SELECT RunId, WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate "
                 + " FROM Run WHERE RunId = @RunId";
 
             using (var connection = _context.CreateConnection())
@@ -76,9 +78,9 @@ namespace MoonWorkRAPI.Repository
         }*/
 
         //특정 JobId로 인해 발생한 run 조회
-        public async Task<IEnumerable<RunModel>> GetRunbyJobId(int JobId)
+        public async Task<IEnumerable<RunModel>> GetRunbyJobId(long JobId)
         {
-            var query = "SELECT RunId, StartDT, EndDT, State, JobId, HostId, SaveDate "
+            var query = "SELECT RunId, WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate "
                 + " FROM Run WHERE JobId = @JobId";
 
             using (var connection = _context.CreateConnection())
@@ -88,11 +90,27 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        //job의 run 기록 최근 5개
+        public async Task<IEnumerable<RunModel>> GetJob_RunRecord(long JobId)
+        {
+            var query = "SELECT * FROM Run " +
+                "WHERE JobId = @JobId " +
+                "order by RunId desc " +
+                "limit 0,5";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var run = await connection.QueryAsync<RunModel>(query, new { JobId });
+                return run.ToList();
+            }
+        }
+
+
         //일정 기간동안의 모든 run 조회
         public async Task<IEnumerable<RunModel>> GetRunbyDate(DateTime FromDT, DateTime ToDT)
         {
 
-            var query = "SELECT RunId, StartDT, EndDT, State, JobId, HostId, SaveDate "
+            var query = "SELECT RunId, WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate "
                 + " FROM Run WHERE StartDT >= @FromDT AND EndDT <= @ToDT";
 
             using (var connection = _context.CreateConnection())

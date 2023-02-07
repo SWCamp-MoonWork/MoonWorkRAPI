@@ -39,7 +39,7 @@ namespace MoonWorkRAPI.Controllers
         //특정 RunId에 대한 정보 가져오기
         [HttpGet]
         [Route("run/{RunId}")]
-        public async Task<ActionResult<RunModel>> GetRunInfo(int RunId)
+        public async Task<ActionResult<RunModel>> GetRunInfo(long RunId)
         {
             try
             {
@@ -55,11 +55,26 @@ namespace MoonWorkRAPI.Controllers
         //특정 JobId로 인해 발생한 Run 조회
         [HttpGet]
         [Route("run/{JobId}/byjob")] //run/{JobId} 이렇게만 하면 경로가 같다고 인식해 오류 발생
-        public async Task<ActionResult> GetRunbyJobId(int JobId)
+        public async Task<ActionResult> GetRunbyJobId(long JobId)
         {
             try
             {
                 var run = await _RunRepo.GetRunbyJobId(JobId);
+                return Ok(run);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // job의 run 기록 최근 5개
+        [HttpGet("run/{JobId}/getrunrecord")]
+        public async Task<ActionResult> GetJob_RunRecord(long JobId)
+        {
+            try
+            {
+                var run = await _RunRepo.GetJob_RunRecord(JobId);
                 return Ok(run);
             }
             catch (Exception ex)

@@ -88,6 +88,21 @@ namespace MoonWorkRAPI.Controllers
            
         }
 
+        // HostId에 따른 Job의 정보 추출
+        [HttpGet("getjob_hostid")]
+        public async Task<ActionResult> GetHost_IsUseFalse(long HostId)
+        {
+            try
+            {
+                var host = await _HostRepo.GetJob_HostId(HostId);
+                return Ok(host);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
         //특정 host에게 run 시킨 후 업데이트
         [HttpPut]

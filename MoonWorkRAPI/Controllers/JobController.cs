@@ -242,6 +242,38 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        // job의 동작중인 상태 확인
+        [HttpGet("getstate")]
+        public async Task<ActionResult<List<JobModel>>> GetJob_Status()
+        {
+            try
+            {
+                var stat = await _jobRepo.GetJob_State();
+                return Ok(stat);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // job의 마지막 실행 시간
+        [HttpGet("getlastrun")]
+        public Object GetLastRun(long JobId)
+        {
+            var last = _jobRepo.GetLastRun(JobId);
+            return last;
+        }
+
+        //job의 다음 실행 시간
+        [HttpGet("getnextrun")]
+        public Object GetNextRun(long JobId, string[] cron)
+        {
+            var next = _jobRepo.GetNextRun(JobId, cron);
+            return next;
+        }
+
+
         [HttpPost("create")]
         public Object CreateJob(JobModel job)
         {

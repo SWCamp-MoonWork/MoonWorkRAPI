@@ -23,6 +23,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using DocumentFormat.OpenXml.Drawing;
 using System.Net.Http.Json;
+using DocumentFormat.OpenXml;
 
 namespace MoonWorkRAPI.Repository
 {
@@ -44,10 +45,13 @@ namespace MoonWorkRAPI.Repository
         public Job_UserScheduleModel GetJob_UserSchedule(long JobId);
         public Job_HostRunModel GetJob_HostRun(long JobId);
         public Job_UserScheduleModel GetJob_WorkerFromMaster(long JobId);
+        public Task<IEnumerable<JobModel>> GetJob_State();
+        public Object GetLastRun(long JobId);
+        public Object GetNextRun(long JobId, string[] cron);
         public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
 /*        public Task UpdateIsUse(JobModel job);*/
-        public Task DeleteJob(int JobId);
+        public void DeleteJob(int JobId);
     }
 
 
@@ -170,7 +174,7 @@ namespace MoonWorkRAPI.Repository
         // 성공 실패 여부 작업 개수
         public object GetSuccess()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE Status = 'success'";
+            var query = "SELECT COUNT(*) FROM Job WHERE State = 'success'";
             using (var connection = _context.CreateConnection())
             {
                 var success = connection.QuerySingleOrDefault(query);
@@ -181,7 +185,7 @@ namespace MoonWorkRAPI.Repository
         // 성공 실패 여부 작업 개수
         public object GetFailed()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE Status = 'failed'";
+            var query = "SELECT COUNT(*) FROM Job WHERE State = 'failed'";
 
             using (var connection = _context.CreateConnection())
             {
@@ -228,34 +232,59 @@ namespace MoonWorkRAPI.Repository
         //job에 대한 JobId, WorkflowName, schedule의 StartDT, EndDT
         public Job_UserScheduleModel GetJob_WorkerFromMaster(long JobId)
         {
-            var query = "SELECT j.JobId, j.WorkflowName, s.ScheduleStartDT, s.ScheduleEndDT FROM Job j, Schedule s WHERE j.JobId = @JobId";
+            var query = "SELECT j.JobId, j.WorkflowName, s.ScheduleStartDT, s.ScheduleEndDT FROM Job j, Schedule s WHERE j.JobId = @JobId and j.JobId = s.JobId";
 
             using (var connection = _context.CreateConnection())
             {
-                var str = connection.QuerySingleOrDefault<Job_UserScheduleModel>(query);
+                var str = connection.QuerySingleOrDefault<Job_UserScheduleModel>(query, new {JobId});
                 return str;
             }
+        }
+
+        //job의 동작중인 상태 확인
+        public async Task<IEnumerable<JobModel>> GetJob_State()
+        {
+            var query = "SELECT JobId, State FROM Job";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var str = await connection.QueryAsync<JobModel>(query);
+                return str.ToList();
+            }
+        }
+
+        // 마지막에 실행된 job의 시간 구하기
+        public Object GetLastRun(long JobId)
+        {
+            var query = "SELECT convert(EndDT,datetime(3)) FROM Run " +
+                " Where EndDT != null order by RunId desc limit 1";
+
+            using (var conn = _context.CreateConnection())
+            {
+                var str = conn.QuerySingleOrDefault<Object>(query, new { JobId });
+                return str;
+            }
+        }
+
+        //다음에 실행될 job의 시간 구하기
+        public Object GetNextRun(long JobId, string[] cron)
+        {
+
+
         }
 
         //job 생성
         public void CreateJob(JobModel job)
         {
-/*            string test = job.WorkflowBlob;
-            byte[] ba = System.Text.Encoding.Default.GetBytes(test);*/
 
-            /*for(int i = 0; i < ba.Length; i++)
-            {
-                Console.WriteLine(ba[i]);
-            }*/
-
-
-            var query = "INSERT INTO Job " +
+            var insert = "INSERT INTO Job " +
                 "   (JobId, JobName, IsUse, WorkflowName, WorkflowBlob, Note, SaveDate, UserId) " +
                 "   VALUES " +
                 "   (@JobId, @JobName, true, @WorkflowName, @WorkflowBlob, @Note, SYSDATE(), @UserId) ";
 
+
             var param = new DynamicParameters();
-            param.Add("JobId", job.JobId);
+/*            param.Add("JobId", job.JobId);*/
             param.Add("JobName", job.JobName);
             param.Add("IsUse", job.IsUse);
             param.Add("WorkflowName", job.WorkflowName);
@@ -266,15 +295,12 @@ namespace MoonWorkRAPI.Repository
 
             using (var conn = _context.CreateConnection())
             {
-                conn.Execute(query, param);
+                conn.Execute(insert, param);
             }
         }
 
         public async Task UpdateJob(JobModel job)
         {
-
-/*            string test = job.WorkflowBlob;
-            byte[] ba = System.Text.Encoding.Default.GetBytes(test);*/
 
             var query = "UPDATE Job SET" +
                 "   JobName = @JobName," +
@@ -302,27 +328,13 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-/*        // Job change IsUse
-        public async Task UpdateIsUse(JobModel job)
-        {
-            var query = "Update Job Set IsUse = @IsUse where JobId = @JobId";
-
-            var param = new DynamicParameters();
-            param.Add("JobId", job.JobId);
-            param.Add("IsUse", job.IsUse);
-
-            using (var conn = _context.CreateConnection())
-            {
-                await conn.ExecuteAsync(query, param);
-            }
-        }*/
-        public async Task DeleteJob(int JobId)
+        public void DeleteJob(int JobId)
         {
             var query = "DELETE FROM Job WHERE JobId = @JobId";
 
             using (var conn = _context.CreateConnection())
             {
-                await conn.ExecuteAsync(query, new { JobId });
+                conn.Execute(query, new { JobId });
             }
         }
     }

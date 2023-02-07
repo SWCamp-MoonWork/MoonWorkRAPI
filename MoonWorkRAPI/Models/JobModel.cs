@@ -13,6 +13,6 @@ namespace MoonWorkRAPI.Models
         public string? Note { set; get; }
         public DateTime? SaveDate { set; get; }
         public long? UserId { set; get; }
-
+        public string? state { set; get; }
     }
 }

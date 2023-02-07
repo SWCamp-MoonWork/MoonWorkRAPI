@@ -10,6 +10,7 @@ namespace MoonWorkRAPI.Repository
         public Task<IEnumerable<HostModel>> GetHost();
         public HostModel GetHostId(long HostId);
         public Task<IEnumerable<HostModel>> GetHost_IsUseTrue();
+        public Task<IEnumerable<Host_JobScheduleModel>> GetJob_HostId(long HostId);
         public Task UpdateHost(HostModel host);
     }
     public class HostRepository : IHostRepository
@@ -70,6 +71,21 @@ namespace MoonWorkRAPI.Repository
                 return host.ToList();
             }
         }
+
+        // HostId에 따른 Job의 정보 추출
+        public async Task<IEnumerable<Host_JobScheduleModel>> GetJob_HostId(long HostId)
+        {
+            var query = "SELECT DISTINCT j.JobId, j.JobName, s.ScheduleStartDT, s.ScheduleEndDT " +
+                "FROM Job j, Schedule s, Run r, Host h " +
+                "Where h.HostId = @HostId and h.HostId = r.HostId and r.JobId = j.JobId and j.JobId = s.JobId";
+
+            using (var conn = _context.CreateConnection())
+            {
+                var str = await conn.QueryAsync<Host_JobScheduleModel>(query, new { HostId });
+                return str.ToList();
+            }
+        }
+
         public async Task UpdateHost(HostModel host)
         {
             var query = "UPDATE Host SET "

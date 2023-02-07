@@ -16,6 +16,7 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<IHostRepository, HostRepository>();
 builder.Services.AddScoped<IRunRepository, RunRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddControllers();
 builder.Services.AddControllers()
     .AddJsonOptions(jsonOptions =>
