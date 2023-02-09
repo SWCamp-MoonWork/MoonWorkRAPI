@@ -89,6 +89,7 @@ namespace MoonWorkRAPI.Repository
             }
 
             Console.WriteLine("result : " + result);
+            
 
             var param = new DynamicParameters();
             param.Add("UserName", UserName);
