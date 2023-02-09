@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoonWorkRAPI.Models;
 using MoonWorkRAPI.Repository;
+using System.Security.Cryptography;
 
 namespace MoonWorkRAPI.Controllers
 {
@@ -30,12 +31,39 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        // 로그인
+        [HttpPost("login")]
+        public object Login(string UserName, string password)
+        {
+            var login = _userRepo.Login(UserName, password);
+
+            return login;
+        }
+
+        // 전체 유저 리스트
+        [HttpGet("userlist")]
+        public async Task<ActionResult<List<UserModel>>> GetUserList()
+        {
+            try
+            {
+                var list = await _userRepo.GetUserList();
+                return Ok(list);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
         // 아이디 중복체크
         [HttpGet("idexist")]
         public string SelectUserId(string username)
         {
             var userid = _userRepo.SelectUserId(username);
+
             return userid;
+
         }
 
         // id찾기
@@ -43,7 +71,40 @@ namespace MoonWorkRAPI.Controllers
         public string GetId(string name)
         {
             var id = _userRepo.GetId(name);
-            return id; ;
+            return id;
+        }
+
+        // 내 정보 보기
+/*        [HttpPost("{UserId}/userinfo")]
+        public */
+
+        // 비밀번호 초기화
+        [HttpPut("{UserId}/resetpassword")]
+        public void ResetPassword(long UserId)
+        {
+            _userRepo.ResetPassword(UserId);
+        }
+
+        // 사용자 정보 변경
+        [HttpPut("{UserId}/update")]
+        public ActionResult<UserModel> UpdateUserInfo(UserModel user)
+        {
+            try
+            {
+                _userRepo.UpdateUserInfo(user);
+                return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // 사용자 삭제
+        [HttpDelete("{UserId}/delete")]
+        public void DeleteUser(long UserId)
+        {
+            _userRepo.DeleteUser(UserId);
         }
     }
 }

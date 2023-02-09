@@ -1,5 +1,7 @@
 ﻿using com.sun.corba.se.impl.ior;
+using com.sun.org.apache.bcel.@internal.generic;
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
 using MoonWorkRAPI.Context;
 using MoonWorkRAPI.Models;
 
@@ -7,12 +9,14 @@ namespace MoonWorkRAPI.Repository
 {
     public interface IRunRepository
     {
-        public long CreateRun(RunModel run);
+        public long? CreateRun(RunModel run);
         public Task<RunModel> GetRunInfo(long RunId);
 /*        public Task<RunModel> GetRun();*/
         public Task<IEnumerable<RunModel>> GetRunbyJobId(long JobId);
         public Task<IEnumerable<RunModel>> GetJob_RunRecord(long JobId);
+        public Task<IEnumerable<RunModel>> GetJob_Duration(long JobId);
         public Task<IEnumerable<RunModel>> GetRunbyDate(DateTime FromDT, DateTime ToDT);
+        public Task UpdateEndDT(RunModel run);
 /*        public Task UpdateRun(RunModel run);*/
     }
 
@@ -26,12 +30,12 @@ namespace MoonWorkRAPI.Repository
         }
 
         //run 시킨 후 run에 대한 정보 기록
-        public long CreateRun(RunModel run)
+        public long? CreateRun(RunModel run)
         {
             var query = "INSERT INTO Run "
-                + " (WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate) "
+                + " (WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate, ResultData) "
                 + " VALUES "
-                + " (@WorkflowName, @StartDT, @EndDT, @State, @JobId, @HostId, SYSDATE())";
+                + " (@WorkflowName, @StartDT, @EndDT, @State, @JobId, @HostId, SYSDATE(), @ResultData)";
 
             var param = new DynamicParameters();
             /*            param.Add("RunId", run.RunId);*/
@@ -41,7 +45,8 @@ namespace MoonWorkRAPI.Repository
             param.Add("State", run.State);
             param.Add("JobId", run.JobId);
             param.Add("HostId", run.HostId);
-/*            param.Add("SaveDate", run.SaveDate);*/
+            /*            param.Add("SaveDate", run.SaveDate);*/
+            param.Add("ResultData", run.ResultData);
 
             using (var conn = _context.CreateConnection())
             {
@@ -105,6 +110,23 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        //job의 run 기록 최근 20개 + duration
+        public async Task<IEnumerable<RunModel>> GetJob_Duration(long JobId)
+        {
+            var query = "SELECT *, " +
+                "(DATEDIFF(EndDT, StartDT) * 86400 + timediff(EndDT,StartDT)) as Duration " +
+                " FROM Run " +
+                " WHERE JobId = @JobId " +
+                " order by RunId desc " +
+                " limit 0,20";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var run = await connection.QueryAsync<RunModel>(query, new {JobId});
+
+                return run.ToList();
+            }
+        }
 
         //일정 기간동안의 모든 run 조회
         public async Task<IEnumerable<RunModel>> GetRunbyDate(DateTime FromDT, DateTime ToDT)
@@ -117,6 +139,22 @@ namespace MoonWorkRAPI.Repository
             {
                 var run = await connection.QueryAsync<RunModel>(query, new { FromDT, ToDT });
                 return run.ToList();
+            }
+        }
+
+        // job run이 다 돌면 endDT update
+        public async Task UpdateEndDT(RunModel run)
+        {
+            var query = "INSERT INTO Run(EndDT) Values(@EndDT) " +
+                " WHERE RunId = @RunId";
+
+            var param = new DynamicParameters();
+            param.Add("RunId", run.RunId);
+            param.Add("EndDT", run.EndDT);
+
+            using(var conn = _context.CreateConnection())
+            {
+                await conn.ExecuteAsync(query, param);
             }
         }
 

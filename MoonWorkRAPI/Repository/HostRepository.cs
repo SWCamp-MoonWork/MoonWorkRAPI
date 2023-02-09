@@ -10,13 +10,14 @@ namespace MoonWorkRAPI.Repository
         public Task<IEnumerable<HostModel>> GetHost();
         public HostModel GetHostId(long HostId);
         public Task<IEnumerable<HostModel>> GetHost_IsUseTrue();
-        public Task<IEnumerable<Host_JobScheduleModel>> GetJob_HostId(long HostId);
+/*        public Task<IEnumerable<Host_JobScheduleModel>> GetJob_HostId(long HostId);*/
         public Task UpdateHost(HostModel host);
     }
+
     public class HostRepository : IHostRepository
     {
         private readonly DapperContext _context;
-
+        
         public HostRepository(DapperContext context)
         {
             _context = context;
@@ -73,15 +74,15 @@ namespace MoonWorkRAPI.Repository
         }
 
         // HostId에 따른 Job의 정보 추출
-        public async Task<IEnumerable<Host_JobScheduleModel>> GetJob_HostId(long HostId)
+        public async Task<IEnumerable<Job_UserScheduleModel>> GetJob_HostId(long HostId)
         {
-            var query = "SELECT DISTINCT j.JobId, j.JobName, s.ScheduleStartDT, s.ScheduleEndDT " +
-                "FROM Job j, Schedule s, Run r, Host h " +
-                "Where h.HostId = @HostId and h.HostId = r.HostId and r.JobId = j.JobId and j.JobId = s.JobId";
+            var query = "SELECT distinct j.JobId, j.JobName FROM Job j, Run r, Host h " +
+                " WHERE j.JobId = r.JobId and r.HostId = h.HostId and h.HostId = @HostId";
 
             using (var conn = _context.CreateConnection())
             {
-                var str = await conn.QueryAsync<Host_JobScheduleModel>(query, new { HostId });
+                var str = await conn.QueryAsync<Job_UserScheduleModel>(query, new { HostId });
+
                 return str.ToList();
             }
         }

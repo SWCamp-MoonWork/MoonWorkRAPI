@@ -24,6 +24,12 @@ using System.Text.Json;
 using DocumentFormat.OpenXml.Drawing;
 using System.Net.Http.Json;
 using DocumentFormat.OpenXml;
+using Quartz;
+using System.Threading.Tasks;
+using com.sun.istack.@internal;
+using Quartz.Impl;
+using DocumentFormat.OpenXml.Spreadsheet;
+using String = com.sun.org.apache.xpath.@internal.operations.String;
 
 namespace MoonWorkRAPI.Repository
 {
@@ -47,9 +53,11 @@ namespace MoonWorkRAPI.Repository
         public Job_UserScheduleModel GetJob_WorkerFromMaster(long JobId);
         public Task<IEnumerable<JobModel>> GetJob_State();
         public Object GetLastRun(long JobId);
-        public Object GetNextRun(long JobId, string[] cron);
+        public Object GetNextRun(long JobId);
         public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
+        public Task UpdateJob_State1(long JobId);
+        public Task UpdateJob_State0(long JobId);
 /*        public Task UpdateIsUse(JobModel job);*/
         public void DeleteJob(int JobId);
     }
@@ -171,10 +179,10 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // 성공 실패 여부 작업 개수
+        // 작동 여부 작업 개수 - 실행중
         public object GetSuccess()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE State = 'success'";
+            var query = "SELECT COUNT(*) FROM Job WHERE State = 1";
             using (var connection = _context.CreateConnection())
             {
                 var success = connection.QuerySingleOrDefault(query);
@@ -182,10 +190,10 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // 성공 실패 여부 작업 개수
+        // 작동 여부 작업 개수 - 정지
         public object GetFailed()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE State = 'failed'";
+            var query = "SELECT COUNT(*) FROM Job WHERE State = 0";
 
             using (var connection = _context.CreateConnection())
             {
@@ -256,21 +264,37 @@ namespace MoonWorkRAPI.Repository
         // 마지막에 실행된 job의 시간 구하기
         public Object GetLastRun(long JobId)
         {
-            var query = "SELECT convert(EndDT,datetime(3)) FROM Run " +
-                " Where EndDT != null order by RunId desc limit 1";
+            var lastrun = "SELECT convert(EndDT,datetime(3)) FROM Run " +
+                " Where EndDT is not null order by RunId desc limit 1";
 
             using (var conn = _context.CreateConnection())
             {
-                var str = conn.QuerySingleOrDefault<Object>(query, new { JobId });
+                var str = conn.QuerySingleOrDefault<Object>(lastrun, new { JobId });
                 return str;
             }
         }
 
         //다음에 실행될 job의 시간 구하기
-        public Object GetNextRun(long JobId, string[] cron)
+        public Object GetNextRun(long JobId)
         {
+            // jobid에 따른 크론식 가져오기
+            var getcron = "SELECT s.CronExpression FROM Job j, Schedule s " +
+                "WHERE j.JobId = s.JobId and j.JobId = @JobId";
 
 
+            // jobid에 따른 최근의 실행날짜 가져오기
+            var laststartrun = "SELECT r.StartDT FROM Run r, Job j " +
+                "Where j.JobId = @JobId and j.JobId = r.jobId " +
+                "order by RunId desc limit 1";
+
+            using (var conn = _context.CreateConnection())
+            {
+                var str = conn.QuerySingleOrDefault<string>(getcron, new { JobId });
+                var start = conn.QuerySingleOrDefault<DateTime>(laststartrun, new { JobId });
+                var expression = new CronExpression(str);
+                DateTimeOffset? time = expression.GetTimeAfter(start);
+                return time;
+            }
         }
 
         //job 생성
@@ -328,6 +352,33 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        // job의 state를 1로 업데이트
+        public async Task UpdateJob_State1(long JobId)
+        {
+            var query = "UPDATE Job SET " +
+                " State = 1 " +
+                " WHERE JobId = @JobId";
+
+            using (var conn = _context.CreateConnection())
+            {
+                await conn.ExecuteAsync(query, new {JobId});
+            }
+        }
+
+        //job의 state를 0으로 업데이트
+        public async Task UpdateJob_State0(long JobId)
+        {
+            var query = "UPDATE Job SET " +
+                " State = 0 " +
+                " WHERE JobId = @JobId";
+
+            using (var conn = _context.CreateConnection())
+            {
+                await conn.ExecuteAsync(query, new { JobId });
+            }
+        }
+
+        // job 삭제
         public void DeleteJob(int JobId)
         {
             var query = "DELETE FROM Job WHERE JobId = @JobId";

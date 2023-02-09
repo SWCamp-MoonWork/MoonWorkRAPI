@@ -267,13 +267,13 @@ namespace MoonWorkRAPI.Controllers
 
         //job의 다음 실행 시간
         [HttpGet("getnextrun")]
-        public Object GetNextRun(long JobId, string[] cron)
+        public Object GetNextRun(long JobId)
         {
-            var next = _jobRepo.GetNextRun(JobId, cron);
+            var next = _jobRepo.GetNextRun(JobId);
             return next;
         }
 
-
+        //job 생성
         [HttpPost("create")]
         public Object CreateJob(JobModel job)
         {
@@ -304,7 +304,7 @@ namespace MoonWorkRAPI.Controllers
                     }
                 }*/
 
-
+        // job 수정
         [HttpPut("update")]
         /*        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]*/
         /*        [Consumes(MediaTypeNames.Application.Json)]*/
@@ -322,12 +322,30 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
-/*        [HttpPut("updateIsUse")]
-        public ActionResult<JobModel> UpdateIsUse(JobModel job)
+        // job의 state를 1로 업데이트
+        [HttpPut("state1")]
+        public ActionResult<JobModel> Update_State1(long JobId)
         {
             try
             {
-                _jobRepo.UpdateIsUse(job);
+                _jobRepo.UpdateJob_State1(JobId);
+
+                return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+        }
+
+        // job의 state를 1로 업데이트
+        [HttpPut("state0")]
+        public ActionResult<JobModel> Update_State0(long JobId)
+        {
+            try
+            {
+                _jobRepo.UpdateJob_State0(JobId);
 
                 return NoContent();
             }
@@ -335,8 +353,25 @@ namespace MoonWorkRAPI.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }*/
+        }
 
+
+        /*        [HttpPut("updateIsUse")]
+                public ActionResult<JobModel> UpdateIsUse(JobModel job)
+                {
+                    try
+                    {
+                        _jobRepo.UpdateIsUse(job);
+
+                        return NoContent();
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, ex.Message);
+                    }
+                }*/
+
+        //job 삭제
         [HttpDelete("delete/{JobId}")]
         public IActionResult Delete(int JobId)
         {
