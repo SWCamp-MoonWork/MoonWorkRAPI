@@ -30,6 +30,7 @@ using com.sun.istack.@internal;
 using Quartz.Impl;
 using DocumentFormat.OpenXml.Spreadsheet;
 using String = com.sun.org.apache.xpath.@internal.operations.String;
+using static Quartz.Logging.OperationName;
 
 namespace MoonWorkRAPI.Repository
 {
@@ -182,7 +183,7 @@ namespace MoonWorkRAPI.Repository
         // 작동 여부 작업 개수 - 실행중
         public object GetSuccess()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE State = 1";
+            var query = "SELECT COUNT(*) FROM Job WHERE State = 01";
             using (var connection = _context.CreateConnection())
             {
                 var success = connection.QuerySingleOrDefault(query);
@@ -193,7 +194,7 @@ namespace MoonWorkRAPI.Repository
         // 작동 여부 작업 개수 - 정지
         public object GetFailed()
         {
-            var query = "SELECT COUNT(*) FROM Job WHERE State = 0";
+            var query = "SELECT COUNT(*) FROM Job WHERE State = 00";
 
             using (var connection = _context.CreateConnection())
             {
@@ -361,7 +362,7 @@ namespace MoonWorkRAPI.Repository
 
             using (var conn = _context.CreateConnection())
             {
-                await conn.ExecuteAsync(query, new {JobId});
+                await conn.ExecuteAsync(query, new { JobId });
             }
         }
 

@@ -88,6 +88,39 @@ namespace MoonWorkRAPI.Controllers
            
         }
 
+        //HostId에 따른 Job의 정보 추출
+        [HttpGet("{HostId}/getjobinfo")]
+        public async Task<ActionResult<List<Job_HostIdModel>>> GetJobInfo(long HostId)
+        {
+            try
+            {
+                var host = await _HostRepo.GetJob_HostId(HostId);
+                return Ok(host);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+/*        // HostId 에 따른 Job의 Last Run Select
+        [HttpGet("{HostId}/getlastrun")]
+        public object GetLastRun(long HostId)
+        {
+            var last = _HostRepo.GetLastRun(HostId);
+            return last;
+        }
+
+        //HostId에 따른 Job의 Next Run Select
+        [HttpGet("{HostId}/getnextrun")]
+        public object GetNextRun(long HostId)
+        {
+            var next = _HostRepo.GetNextRun(HostId);
+            return next;
+        }*/
+
+
 /*        // HostId에 따른 Job의 정보 추출
         [HttpGet("getjob_hostid")]
         public async Task<ActionResult> GetHost_IsUseFalse(long HostId)

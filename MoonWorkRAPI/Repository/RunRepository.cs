@@ -85,7 +85,7 @@ namespace MoonWorkRAPI.Repository
         //특정 JobId로 인해 발생한 run 조회
         public async Task<IEnumerable<RunModel>> GetRunbyJobId(long JobId)
         {
-            var query = "SELECT RunId, WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate "
+            var query = "SELECT RunId, WorkflowName, StartDT, EndDT, State, JobId, HostId, SaveDate, ResultData "
                 + " FROM Run WHERE JobId = @JobId";
 
             using (var connection = _context.CreateConnection())

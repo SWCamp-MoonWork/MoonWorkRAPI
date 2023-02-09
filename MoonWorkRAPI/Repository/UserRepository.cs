@@ -16,7 +16,7 @@ namespace MoonWorkRAPI.Repository
     public interface IUserRepository
     {
         public void CreateUser(UserModel user);
-        public object Login(string UserName, string Password);
+        public object Login(UserModel user);
         public Task<IEnumerable<UserModel>> GetUserList();
         public string SelectUserId(string username);
         public string GetId(string name);
@@ -71,11 +71,11 @@ namespace MoonWorkRAPI.Repository
         }
 
         // 로그인
-        public object Login(string UserName, string Password)
+        public object Login(UserModel user)
         {
             var query = "SELECT COUNT(*) as Result FROM User WHERE UserName = @UserName and Password = @Password";
 
-            byte[] array = Encoding.UTF8.GetBytes(Password);
+            byte[] array = Encoding.UTF8.GetBytes(user.Password);
             byte[] hashValue;
             string result = string.Empty;
 
@@ -87,21 +87,33 @@ namespace MoonWorkRAPI.Repository
             {
                 result += hashValue[i].ToString("x2");
             }
-
             Console.WriteLine("result : " + result);
-            
 
-            var param = new DynamicParameters();
-            param.Add("UserName", UserName);
-            param.Add("Password", result);
+            var name = "SELECT UserName FROM User WHERE UserName = @UserName";
+            var pass = "SELECT Password FROM User WHERE UserName = @UserName";
 
             using (var conn = _context.CreateConnection())
             {
-                var log = conn.Execute(query, param);
+                var username = conn.QuerySingleOrDefault<string>(name, new{ user.UserName });
+                var password = conn.QuerySingleOrDefault<string>(pass, new { user.UserName });
+                Console.WriteLine("username : " + username);
+                Console.WriteLine("password : " + password);
+                if (password == result)
+                {
+                    var param = new DynamicParameters();
+                    param.Add("UserName", user.UserName);
+                    param.Add("Password", result);
 
-                Console.WriteLine("log : " + log);
-
-                return log;
+                    var log = conn.QuerySingleOrDefault(query, param);
+                    Console.WriteLine("log : " + log);
+                    /*conn.QuerySingleOrDefault(query, param);*/
+                    return log;
+                }
+                else
+                {
+                    Console.WriteLine("실패");
+                    return "로그인 실패";
+                }
             }
         }
 

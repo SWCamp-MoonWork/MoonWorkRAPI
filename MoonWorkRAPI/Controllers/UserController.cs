@@ -33,11 +33,18 @@ namespace MoonWorkRAPI.Controllers
 
         // 로그인
         [HttpPost("login")]
-        public object Login(string UserName, string password)
+        public object Login(UserModel user)
         {
-            var login = _userRepo.Login(UserName, password);
+            try
+            {
+                var str = _userRepo.Login(user);
+                return str;
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
 
-            return login;
+            }
         }
 
         // 전체 유저 리스트

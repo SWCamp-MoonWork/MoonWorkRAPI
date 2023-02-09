@@ -330,7 +330,7 @@ namespace MoonWorkRAPI.Controllers
             {
                 _jobRepo.UpdateJob_State1(JobId);
 
-                return NoContent();
+                return StatusCode(200);
             }
             catch(Exception ex)
             {
@@ -347,7 +347,7 @@ namespace MoonWorkRAPI.Controllers
             {
                 _jobRepo.UpdateJob_State0(JobId);
 
-                return NoContent();
+                return StatusCode(200);
             }
             catch (Exception ex)
             {

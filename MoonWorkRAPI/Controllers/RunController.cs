@@ -98,6 +98,10 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        
+
+
+
 /*        // run 테이블에서 startdt enddt 듀레이션 구하기
         [HttpGet("run/{JobId}/getduration")]
         public async Task<ActionResult> GetDuration(long JobId)
