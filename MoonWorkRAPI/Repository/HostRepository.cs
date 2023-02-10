@@ -80,10 +80,10 @@ namespace MoonWorkRAPI.Repository
         // HostId에 따른 Job의 정보 추출
         public async Task<IEnumerable<Job_HostIdModel>> GetJob_HostId(long HostId)
         {
-/*            var getlastrun = "SELECT convert(r.EndDT, datetime(3)) " +
+            var getlastrun = "SELECT convert(r.EndDT, datetime(3)) " +
                     "From Run r, Host h " +
                     "where EndDT is not null and h.HostId = @HostId and h.HostId = r.HostId " +
-                    "order by RunId desc limit 1";*/
+                    "order by RunId desc limit 1";
 
             var getcron = "select distinct s.CronExpression from Host h, Run r, Job j, Schedule s " +
                 " Where h.HostId = @HostId and h.HostId = r.HostId and r.JobId = j.JobId and j.JobId = s.JobId";
@@ -93,19 +93,23 @@ namespace MoonWorkRAPI.Repository
 
             using (var conn = _context.CreateConnection())
             {
-/*                var lastrun = conn.QuerySingleOrDefault<DateTime>(getlastrun, new { HostId });
-*/                var cron = conn.QuerySingleOrDefault<string>(getcron, new { HostId });
+                var lastrun = conn.QuerySingleOrDefault<DateTime>(getlastrun, new { HostId });
+                var cron = conn.QuerySingleOrDefault<string>(getcron, new { HostId });
                 var start = conn.QuerySingleOrDefault<DateTime>(laststartrun, new { HostId });
                 var expression = new CronExpression(cron);
                 DateTimeOffset? time = expression.GetTimeAfter(start);
-/*
+
+                Console.WriteLine("time : " + time);
+
                 var last = lastrun.ToString("yyyy-mm-dd HH:mm:ss.fff");
-                var next = time.ToString("yyyy-mm-dd HH:mm:ss.fff");
-
                 Console.WriteLine("last : " + last);
-                Console.WriteLine("next : " + next);
 
-                Console.WriteLine("time : " + time);*/
+/*                var next = time.ToString("yyyy-mm-dd HH:mm:ss.fff");
+                Console.WriteLine("next : " + next);*/
+
+                Console.WriteLine("time : " + time);
+
+
 
                 string sub = time.ToString();
                 Console.WriteLine("sub : " + sub);

@@ -109,7 +109,7 @@ namespace MoonWorkRAPI.Repository
         public async Task<IEnumerable<JobUserNameModel>> GetJobUserName()
         {
             var query = "SELECT j.JobId, j.JobName, j.IsUse, j.WorkflowName, " +
-                " CONVERT(j.WorkflowBlob using utf8) as WorkflowBlob, j.Note, j.SaveDate, j.UserId, u.UserName " +
+                " CONVERT(j.WorkflowBlob using utf8) as WorkflowBlob, j.Note, j.SaveDate, j.UserId, u.Name " +
                 " from Job j, User u WHERE u.UserId = j.UserId";
 
             using(var connection = _context.CreateConnection())
