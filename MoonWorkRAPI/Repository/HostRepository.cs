@@ -1,7 +1,9 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Http;
 using MoonWorkRAPI.Context;
 using MoonWorkRAPI.Models;
 using Quartz;
+using System.Globalization;
 
 namespace MoonWorkRAPI.Repository
 {
@@ -94,18 +96,38 @@ namespace MoonWorkRAPI.Repository
             using (var conn = _context.CreateConnection())
             {
                 var lastrun = conn.QuerySingleOrDefault<DateTime>(getlastrun, new { HostId });
+
                 var cron = conn.QuerySingleOrDefault<string>(getcron, new { HostId });
                 var start = conn.QuerySingleOrDefault<DateTime>(laststartrun, new { HostId });
                 var expression = new CronExpression(cron);
                 DateTimeOffset? time = expression.GetTimeAfter(start);
 
-                Console.WriteLine("time : " + time);
+                Console.WriteLine("Start : " + start);
+                /*                Console.WriteLine("time : " + time);*/
 
-                var last = lastrun.ToString("yyyy-mm-dd HH:mm:ss.fff");
-                Console.WriteLine("last : " + last);
+                /*ateTimeOffset offsetDate = DateTimeOffset.Parse(time);
+                Console.WriteLine(offsetDate.ToString());*/
 
-/*                var next = time.ToString("yyyy-mm-dd HH:mm:ss.fff");
-                Console.WriteLine("next : " + next);*/
+
+                /*DateTimeOffset myDTO = DateTimeOffset.ParseExact(
+                      time, "yyyy/MM/dd HH:mm:ss.fff",
+                      CultureInfo.InvariantCulture);
+                Console.WriteLine(myDTO);*/
+
+
+
+                /*var last = lastrun.ToString("yyyy-mm-dd HH:mm:ss.fff");
+                Console.WriteLine("last : " + last);*/
+
+                DateTimeOffset thisDate = DateTimeOffset.UtcNow;
+                Console.WriteLine(thisDate.ToString());
+
+                thisDate = DateTimeOffset.Now;
+                Console.WriteLine(thisDate.ToString());
+
+                /*DateTimeOffset next = time.ToString();*/
+                /*                var next = time.ToString("yyyy-mm-dd HH:mm:ss.fff");
+                                Console.WriteLine("next : " + next);*/
 
                 Console.WriteLine("time : " + time);
 
@@ -128,7 +150,7 @@ namespace MoonWorkRAPI.Repository
                     "From Run r, Host h " +
                     "where EndDT is not null and h.HostId = @HostId and h.HostId = r.HostId " +
                     "order by RunId desc limit 1) as LastRun, '" +
-                    total + "' as NextRun " +
+                    time + "' as NextRun " +
                     "FROM Job j, Run r, Host h " +
                     "WHERE j.JobId = r.JobId and r.HostId = h.HostId and h.HostId = @HostId";
 

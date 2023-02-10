@@ -10,6 +10,7 @@
         public string? Note { set; get; }
         public DateTime SaveDate { set; get; }
         public long UserId { set; get; }
-        public string? UserName { set; get; }
+        public string? Name { set; get; }
+        
     }
 }

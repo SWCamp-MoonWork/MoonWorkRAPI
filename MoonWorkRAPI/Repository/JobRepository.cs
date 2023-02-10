@@ -55,8 +55,8 @@ namespace MoonWorkRAPI.Repository
         public Task<IEnumerable<JobModel>> GetJob_State();
         public Object GetLastRun(long JobId);
         public Object GetNextRun(long JobId);
-        public long GetRunningJobCount();
-        public long GetUsingJobCount();
+        public object GetRunningJobCount();
+        public object GetUsingJobCount();
         public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
         public Task UpdateJob_State1(long JobId);
@@ -300,26 +300,26 @@ namespace MoonWorkRAPI.Repository
         }
 
         // 작동중인 job 카운트
-        public long GetRunningJobCount()
+        public object GetRunningJobCount()
         {
             var query = "SELECT COUNT(*) FROM Job WHERE State = '01'";
 
             using(var conn = _context.CreateConnection())
             {
-                var count = conn.QuerySingleOrDefault<long>(query);
+                var count = conn.QuerySingleOrDefault(query);
                 return count;
             }
         }
 
 
         // 활성화된 job 카운트
-        public long GetUsingJobCount()
+        public object GetUsingJobCount()
         {
             var query = "SELECT COUNT(*) FROM Job WHERE IsUse = true";
 
             using(var conn = _context.CreateConnection())
             {
-                var count = conn.QuerySingleOrDefault<long>(query);
+                var count = conn.QuerySingleOrDefault(query);
                 return count;
             }
         }
