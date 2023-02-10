@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MoonWorkRAPI.Models;
 using MoonWorkRAPI.Repository;
 using System.Security.Cryptography;
@@ -46,6 +47,26 @@ namespace MoonWorkRAPI.Controllers
 
             }
         }
+
+        // UserName(ID), Password에 따른 유저 정보
+        [HttpPost("getuserinfo")]
+        public object GetUserInfo(UserModel user)
+        {
+            try
+            {
+                var str = _userRepo.GetUserInfo(user);
+                if(str == null)
+                {
+                    return NotFound();
+                }
+                return Ok(str);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
         // 전체 유저 리스트
         [HttpGet("userlist")]

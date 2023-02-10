@@ -273,6 +273,25 @@ namespace MoonWorkRAPI.Controllers
             return next;
         }
 
+        // 작동중인 job 카운트
+        [HttpGet("countrunningjob")]
+        public long GetRunningJobCount()
+        {
+            var count = _jobRepo.GetRunningJobCount();
+            return count;
+        }
+
+        // 활성화된 job 카운트
+        [HttpGet("countusingjob")]
+        public long GetUsingJobCount()
+        {
+            var count = _jobRepo.GetUsingJobCount();
+            return count;
+        }
+
+
+
+
         //job 생성
         [HttpPost("create")]
         public Object CreateJob(JobModel job)

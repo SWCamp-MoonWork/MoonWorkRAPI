@@ -55,6 +55,8 @@ namespace MoonWorkRAPI.Repository
         public Task<IEnumerable<JobModel>> GetJob_State();
         public Object GetLastRun(long JobId);
         public Object GetNextRun(long JobId);
+        public long GetRunningJobCount();
+        public long GetUsingJobCount();
         public void CreateJob(JobModel job);
         public Task UpdateJob(JobModel job);
         public Task UpdateJob_State1(long JobId);
@@ -127,7 +129,6 @@ namespace MoonWorkRAPI.Repository
             using (var connection = _context.CreateConnection())
             {
                 var runningJobs = await connection.QueryAsync<JobModel>(query);
-                Console.Write(runningJobs);
                 return runningJobs.ToList();
             }
         }
@@ -298,6 +299,32 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        // 작동중인 job 카운트
+        public long GetRunningJobCount()
+        {
+            var query = "SELECT COUNT(*) FROM Job WHERE State = '01'";
+
+            using(var conn = _context.CreateConnection())
+            {
+                var count = conn.QuerySingleOrDefault<long>(query);
+                return count;
+            }
+        }
+
+
+        // 활성화된 job 카운트
+        public long GetUsingJobCount()
+        {
+            var query = "SELECT COUNT(*) FROM Job WHERE IsUse = true";
+
+            using(var conn = _context.CreateConnection())
+            {
+                var count = conn.QuerySingleOrDefault<long>(query);
+                return count;
+            }
+        }
+
+
         //job 생성
         public void CreateJob(JobModel job)
         {
@@ -357,7 +384,7 @@ namespace MoonWorkRAPI.Repository
         public async Task UpdateJob_State1(long JobId)
         {
             var query = "UPDATE Job SET " +
-                " State = 1 " +
+                " State = 01 " +
                 " WHERE JobId = @JobId";
 
             using (var conn = _context.CreateConnection())
@@ -370,7 +397,7 @@ namespace MoonWorkRAPI.Repository
         public async Task UpdateJob_State0(long JobId)
         {
             var query = "UPDATE Job SET " +
-                " State = 0 " +
+                " State = 00 " +
                 " WHERE JobId = @JobId";
 
             using (var conn = _context.CreateConnection())

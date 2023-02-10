@@ -17,6 +17,7 @@ namespace MoonWorkRAPI.Repository
     {
         public void CreateUser(UserModel user);
         public object Login(UserModel user);
+        public object GetUserInfo(UserModel user);
         public Task<IEnumerable<UserModel>> GetUserList();
         public string SelectUserId(string username);
         public string GetId(string name);
@@ -104,9 +105,19 @@ namespace MoonWorkRAPI.Repository
                     param.Add("UserName", user.UserName);
                     param.Add("Password", result);
 
+/*                    var all = "SELECT * FROM User WHERE UserName = @UserName AND Password = @Password";
+                    Console.WriteLine("all :" + all);
+                    
+                    var allinfo = conn.QuerySingleOrDefault<UserModel>(all, new {user.UserName, user.Password});
+                    Console.WriteLine("allinfo : " + allinfo);
+                    
+                    var info = conn.QuerySingleOrDefault(all,param);
+                    Console.WriteLine("info : " + info);*/
+
                     var log = conn.QuerySingleOrDefault(query, param);
                     Console.WriteLine("log : " + log);
-                    /*conn.QuerySingleOrDefault(query, param);*/
+                    conn.QuerySingleOrDefault(query, param);
+
                     return log;
                 }
                 else
@@ -117,7 +128,53 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
+        // UserName(ID), Password에 따른 유저 정보
+        public object GetUserInfo(UserModel user)
+        {
+            var query = "SELECT * FROM User WHERE UserName = @UserName AND Password = @Password";
 
+            var name = "SELECT UserName FROM User WHERE UserName = @UserName";
+            var pass = "SELECT PassWord FROM User WHERE UserName = @UserName";
+
+            byte[] array = Encoding.UTF8.GetBytes(user.Password);
+            byte[] hashValue;
+            string result = string.Empty;
+
+            using (SHA256 mySHA256 = SHA256.Create())
+            {
+                hashValue = mySHA256.ComputeHash(array);
+            }
+            for (int i = 0; i < hashValue.Length; i++)
+            {
+                result += hashValue[i].ToString("x2");
+            }
+            Console.WriteLine("result : " + result);
+
+            using (var conn = _context.CreateConnection())
+            {
+                /*var use = conn.QuerySingleOrDefaultAsync<UserModel>(query, new{user.UserName, result });*/
+                /*Console.WriteLine("user : " + user);*/
+                var username = conn.QuerySingleOrDefault<string>(name, new { user.UserName });
+                var password = conn.QuerySingleOrDefault<string>(pass, new { user.UserName });
+
+
+                var param = new DynamicParameters();
+                param.Add("UserName", user.UserName);
+                param.Add("Password", result);
+
+                var all = "SELECT * FROM User WHERE UserName = @UserName AND Password = @Password";
+                Console.WriteLine("all :" + all);
+
+                var allinfo = conn.QuerySingleOrDefault<UserModel>(all, new {user.UserName, user.Password});
+                Console.WriteLine("allinfo : " + allinfo);
+
+                var info = conn.QuerySingleOrDefault<UserModel>(all, param);
+                Console.WriteLine("info : " + info);
+
+/*                var log = conn.QuerySingleOrDefault(query, result);*/
+                return info;
+            }
+        }
 
         //전체 유저 리스트
         public async Task<IEnumerable<UserModel>> GetUserList()
