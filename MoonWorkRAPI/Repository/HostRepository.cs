@@ -82,7 +82,7 @@ namespace MoonWorkRAPI.Repository
         // HostId에 따른 Job의 정보 추출
         public async Task<IEnumerable<Job_HostIdModel>> GetJob_HostId(long HostId)
         {
-            var getlastrun = "SELECT convert(r.EndDT, datetime(3)) " +
+            var lastendrun = "SELECT r.EndDT " +
                     "From Run r, Host h " +
                     "where EndDT is not null and h.HostId = @HostId and h.HostId = r.HostId " +
                     "order by RunId desc limit 1";
@@ -95,9 +95,12 @@ namespace MoonWorkRAPI.Repository
 
             using (var conn = _context.CreateConnection())
             {
-                var lastrun = conn.QuerySingleOrDefault<DateTime>(getlastrun, new { HostId });
+                var lastrun = conn.QuerySingleOrDefault<DateTime>(lastendrun, new { HostId });
+                Console.WriteLine("lastrun : " + lastrun);
 
                 var cron = conn.QuerySingleOrDefault<string>(getcron, new { HostId });
+                Console.WriteLine("cron : " + cron);
+
                 var start = conn.QuerySingleOrDefault<DateTime>(laststartrun, new { HostId });
                 var expression = new CronExpression(cron);
                 DateTimeOffset? time = expression.GetTimeAfter(start);
@@ -118,22 +121,22 @@ namespace MoonWorkRAPI.Repository
 
                 /*var last = lastrun.ToString("yyyy-mm-dd HH:mm:ss.fff");
                 Console.WriteLine("last : " + last);*/
-
+/*
                 DateTimeOffset thisDate = DateTimeOffset.UtcNow;
                 Console.WriteLine(thisDate.ToString());
 
                 thisDate = DateTimeOffset.Now;
-                Console.WriteLine(thisDate.ToString());
+                Console.WriteLine(thisDate.ToString());*/
 
                 /*DateTimeOffset next = time.ToString();*/
                 /*                var next = time.ToString("yyyy-mm-dd HH:mm:ss.fff");
                                 Console.WriteLine("next : " + next);*/
 
-                Console.WriteLine("time : " + time);
+/*                Console.WriteLine("time : " + time);*/
 
 
 
-                string sub = time.ToString();
+/*                string sub = time.ToString();
                 Console.WriteLine("sub : " + sub);
 
                 string ss = sub.Substring(0, 10);
@@ -143,7 +146,7 @@ namespace MoonWorkRAPI.Repository
                 Console.WriteLine("sd : " + sd);
 
                 string total = ss + " " + sd;
-                Console.WriteLine("total : " + total);
+                Console.WriteLine("total : " + total);*/
 
                 var query = "SELECT distinct j.JobId, j.JobName, " +
                     "(SELECT convert(r.EndDT, datetime(3)) " +

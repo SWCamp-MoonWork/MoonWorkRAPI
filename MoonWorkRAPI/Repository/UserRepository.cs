@@ -162,7 +162,8 @@ namespace MoonWorkRAPI.Repository
                 param.Add("UserName", user.UserName);
                 param.Add("Password", result);
 
-                var all = "SELECT * FROM User WHERE UserName = @UserName AND Password = @Password";
+                var all = "SELECT UserId, UserName, Password, Name, Email, Note, IsActive " +
+                    " FROM User WHERE UserName = @UserName AND Password = @Password";
                 Console.WriteLine("all :" + all);
 
                 var allinfo = conn.QuerySingleOrDefault<UserModel>(all, new {user.UserName, user.Password});

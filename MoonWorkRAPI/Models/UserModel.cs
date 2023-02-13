@@ -9,5 +9,6 @@
         public string? Email { get; set; }
         public string? Note { get; set; }
         public Boolean? IsActive { get; set; }
+/*        public DateTime? LastLogin { get; set; }*/
     }
 }

@@ -85,7 +85,7 @@ namespace MoonWorkRAPI.Controllers
 
 
         // 아이디 중복체크
-        [HttpGet("idexist")]
+        [HttpGet("{username}/idexist")]
         public string SelectUserId(string username)
         {
             var userid = _userRepo.SelectUserId(username);

@@ -21,6 +21,7 @@ namespace MoonWorkRAPI.Controllers
             _jobRepo = jobRepo;
         }
 
+        // 전체 Job 가져오기
         [HttpGet]
         [Route("list")]
         public async Task<ActionResult<List<JobModel>>> GetJobs()
@@ -37,6 +38,7 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
+        // 특정 Job 가져오기
         [HttpGet]
         [Route("{JobId}", Name = "JobByJobId")]
         public async Task<ActionResult<JobModel>> GetJob(int JobId)
@@ -56,7 +58,7 @@ namespace MoonWorkRAPI.Controllers
             }
         }
 
-        // job + UserName select
+        // userid에 따른 job의 정보와 username
         [HttpGet("joblist_username")]
         public async Task<ActionResult<List<JobUserNameModel>>> GetJobUserName()
         {
@@ -355,7 +357,7 @@ namespace MoonWorkRAPI.Controllers
 
         }
 
-        // job의 state를 1로 업데이트
+        // job의 state를 0으로 업데이트
         [HttpPut("state0")]
         public ActionResult<JobModel> Update_State0(long JobId)
         {

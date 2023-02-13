@@ -105,7 +105,7 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        // job + UserName select
+        // userid에 따른 job의 정보와 username
         public async Task<IEnumerable<JobUserNameModel>> GetJobUserName()
         {
             var query = "SELECT j.JobId, j.JobName, j.IsUse, j.WorkflowName, " +
@@ -119,7 +119,7 @@ namespace MoonWorkRAPI.Repository
             }
         }
 
-        //작동중인 job list
+        //Running 중인 전체 job list 조회
         public async Task<IEnumerable<JobModel>> GetRunningJobs()
         {
             var query = "SELECT JobId, JobName, IsUse, WorkflowName, CONVERT(WorkflowBlob using utf8) as WorkflowBlob, Note, SaveDate, UserId" +
